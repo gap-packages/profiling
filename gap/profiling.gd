@@ -10,7 +10,7 @@ DeclareGlobalFunction( "ReadLineByLineProfile" );
 
 #! @Description
 #!   Generate a Flame graph from a line by line profile
-DeclareGlobalFunction("GenerateFlameGraph");
+DeclareGlobalFunction("OutputFlameGraph");
 
 #! @Description
 #!   Output HTML files describing a line by line profile

@@ -96,21 +96,38 @@ struct FullFunction
 
   friend bool operator<(const FullFunction& lhs, const FullFunction& rhs)
   {
+    if(lhs.line < rhs.line) return true;
+    if(lhs.line > rhs.line) return false;
     if(lhs.name < rhs.name) return true;
     if(lhs.name > rhs.name) return false;
     if(lhs.filename < rhs.filename) return true;
     if(lhs.filename > rhs.filename) return false;
-    if(lhs.line < rhs.line) return true;
+
     return false;
   }
 };
+
+namespace GAPdetail {
+template<>
+struct GAP_maker<FullFunction>
+{
+  Obj operator()(const FullFunction& f)
+  {
+    GAPRecord r;
+    r.set("line", f.line);
+    r.set("name", f.name);
+    r.set("filename", f.filename);
+    return r.raw_obj();
+  }
+};
+}
 
 FullFunction buildFunctionName(const std::string& s, const JsonParse& jp)
 {
   return FullFunction(s, jp.File, jp.Line);
 }
 
-Obj TestCommandWithParams(Obj self, Obj stream, Obj param2)
+Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 {
     GAPFunction readline("IO_ReadLine");
  
@@ -122,7 +139,6 @@ Obj TestCommandWithParams(Obj self, Obj stream, Obj param2)
     std::map<std::string, std::map<int, int> > runtime_lines;
 
     std::map<FullFunction, int> runtime_in_function_map;
-    std::map<FullFunction, int> runtime_in_function_children_map;
     
     std::map<std::vector<FullFunction>, int> runtime_stack_trace_map;
     // We cache where we are in this map, as doing the lookup is expensive
@@ -141,7 +157,7 @@ Obj TestCommandWithParams(Obj self, Obj stream, Obj param2)
         return Fail;
       std::string str((char*)CHARS_STRING(gapstr));
       if(str.length() == 0)
-        return stream;
+        break;
        
       JsonParse ret;
       if(ReadJson(str, ret))
@@ -178,11 +194,12 @@ Obj TestCommandWithParams(Obj self, Obj stream, Obj param2)
           }
           else
           {
+            exec_lines[ret.File].insert(ret.Line);
             if(firstExec)
               firstExec = false;
             else
             {
-              exec_lines[ret.File].insert(ret.Line);
+
               // The ticks are since the last executed line
               runtime_lines[prev_exec.File][prev_exec.Line]+=ret.Ticks;
               // Hard to know exactly where to charge these to --
@@ -197,7 +214,6 @@ Obj TestCommandWithParams(Obj self, Obj stream, Obj param2)
       }
 
       if(ret.Type == Exec) prev_exec = ret;
-      gapstr = GAP_callFunction(readline, stream);
     }
     
 
@@ -251,26 +267,28 @@ Obj TestCommandWithParams(Obj self, Obj stream, Obj param2)
     }
 
 
-    std::vector<std::pair<std::string, int> > function_runtimes;
+    std::vector<std::pair<FullFunction, int> > function_runtimes;
     for(std::map<FullFunction, int>::iterator it = runtime_in_function_map.begin();
         it != runtime_in_function_map.end(); ++it)
     {
       function_runtimes.push_back(*it);
     }
 
-    std::vector<std::pair<std::vector<std::string>, int> > function_stack_runtimes;
+    std::vector<std::pair<std::vector<FullFunction>, int> > function_stack_runtimes;
     for(std::map<std::vector<FullFunction>, int>::iterator it = runtime_stack_trace_map.begin(); 
         it != runtime_stack_trace_map.end(); ++it)
     {
       function_stack_runtimes.push_back(*it);
     }
 
-    Obj read_exec_data_obj = GAP_make(read_exec_data);
-    Obj function_runtimes_obj = GAP_make(function_runtimes);
-    Obj function_stack_runtimes_obj = GAP_make(function_stack_runtimes);
 
+    GAPRecord r;
 
-    return read_exec_data_obj;
+    r.set("line_info", read_exec_data);
+    r.set("fun_runtimes", function_runtimes);
+    r.set("stack_runtimes", function_stack_runtimes);
+
+    return GAP_make(r);
 }
 
 
@@ -285,7 +303,7 @@ typedef Obj (* GVarFunc)(/*arguments*/);
 // Table of functions to export
 static StructGVarFunc GVarFuncs [] = {
     GVAR_FUNC_TABLE_ENTRY("profiling.c", TestCommand, 0, ""),
-    GVAR_FUNC_TABLE_ENTRY("profiling.c", TestCommandWithParams, 2, "param, param2"),
+    GVAR_FUNC_TABLE_ENTRY("profiling.c",READ_PROFILE_FROM_STREAM, 2, "param, param2"),
 
 	{ 0 } /* Finish with an empty entry */
 

@@ -367,9 +367,12 @@ struct GAP_maker<std::vector<T> >
 template<>
 struct GAP_maker<std::string>
 {
-    Obj operator()(const std::string& ) const
+    Obj operator()(const std::string& s) const
     {
-      abort();
+      Obj o;
+      const char* c = s.c_str();
+      C_NEW_STRING_DYN(o, c);
+      return o;
     }
 };
 

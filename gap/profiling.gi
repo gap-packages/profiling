@@ -72,8 +72,8 @@ end);
 ##
 BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
     local infile, outname, instream, outstream, line, allLines, 
-          coverage, counter, overview, i, fileinfo,
-          readlineset, execlineset, outchar, outputtext, 
+          counter, overview, i, fileinfo,
+          readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml, LookupWithDefault;
     
     LookupWithDefault := function(dict, val, default)
@@ -84,24 +84,6 @@ BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
         else
             return v;
         fi;
-    end;
-    
-    outputtext := function(lines, coverage, outstream)
-      local i, outchar;
-      for i in [1..Length(lines)] do
-        if coverage[i] = 0 then
-          outchar := "  ";
-        elif coverage[i] = 1 then
-          outchar := "* ";
-        elif coverage[i] = 2 then
-          outchar := "! ";
-        elif coverage[i] = 3 then
-          outchar := "- ";
-        else
-          Error("Internal error");
-        fi;
-        PrintTo(outstream, outchar, lines[i]);
-      od;
     end;
     
     outputhtml := function(lines, coverage, outstream)
@@ -122,7 +104,7 @@ BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
           outchar := "ignore";
         elif coverage[i][2] = 1 then
           outchar := "exec";
-        elif coverage[i][1] = 2 then
+        elif coverage[i][1] = 1 then
           outchar := "missed";
         else
           Error("Internal error");
@@ -134,7 +116,7 @@ BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
         str := ReplacedString(str, " ", "&nbsp;");
         PrintTo(outstream, "<a name=\"line",i,"\"></a><tr>");
         time := 0;
-        if IsBound(coverage[i]) then
+        if IsBound(coverage[i]) and coverage[i][2] = 1 then
           time := String(coverage[i][3]);
         fi;
         totaltime := "";
@@ -212,13 +194,6 @@ BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
             od;
             CloseStream(instream);
             
-            
-            for i in infile[2] do
-              coverage[i] := 2;
-            od;
-            for i in execlineset do
-              coverage[i] := 1;
-            od;
             
             Add(overview, rec(outname := outname, inname := infile,
             execlines := Length(Filtered(fileinfo[2], x -> (x[2] = 1))),

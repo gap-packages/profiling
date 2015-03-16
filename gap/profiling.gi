@@ -52,25 +52,9 @@ InstallGlobalFunction("OutputFlameGraph",function(data, filename)
   CloseStream(outstream);
 end);
 
-#############################################################################
+
 ##
-##
-##  <#GAPDoc Label="OutputAnnotatedCodeCoverageFiles">
-##  <ManSection>
-##  <Func Name="OutputAnnotatedCodeCoverageFiles" Arg="cover, indir, outdir"/>
-##
-##  <Description>
-##  <Ref Func="OutputAnnotatedCodeCoverageFiles"/> takes <A>cover</A> (an output of
-##  <Ref Func="ReadLineByLineProfile"/>), and two directory names. It outputs a copy
-##  of each file in <A>cover</A> which is contained in <A>indir</A>
-##  into <A>outdir</A>, annotated with which lines were executed.
-##  <A>indir</A> may also be the name of a single file, in which case
-##  only code coverage for that file is produced.
-##  </Description>
-##  </ManSection>
-##  <#/GAPDoc>
-##
-BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
+InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, outdir)
     local infile, outname, instream, outstream, line, allLines, 
           counter, overview, i, fileinfo,
           readlineset, execlineset, outchar,
@@ -115,7 +99,7 @@ BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
         str := ReplacedString(str, "<", "&lt;");
         str := ReplacedString(str, " ", "&nbsp;");
         PrintTo(outstream, "<a name=\"line",i,"\"></a><tr>");
-        time := 0;
+        time := "";
         if IsBound(coverage[i]) and coverage[i][2] = 1 then
           time := String(coverage[i][3]);
         fi;
@@ -168,7 +152,7 @@ BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
         # We have to do a slightly horrible thing to get the formatting we want
         codecover := String(Floor(codecover*100.0));
         PrintTo(outstream, "<p>",codecover{[1..Length(codecover)-1]},"% (",
-          i.execlines,"/",i.execlines + i.readnotexeclines,")</p>");
+          i.execlines,"/",i.execlines + i.readnotexeclines,"), ",i.filetime, " ns</p>");
       od;
       
       PrintTo(outstream,"</td></tr></table></body></html>");
@@ -196,6 +180,7 @@ BIND_GLOBAL("OutputAnnotatedCodeCoverageFilesNEW",function(data, indir, outdir)
             
             
             Add(overview, rec(outname := outname, inname := infile,
+            filetime := Sum(fileinfo[2], x -> x[3]),
             execlines := Length(Filtered(fileinfo[2], x -> (x[2] = 1))),
             readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] = 1 or x[2] = 1)))));
             outputhtml(allLines, fileinfo[2], outstream);

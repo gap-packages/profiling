@@ -58,7 +58,10 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
     local infile, outname, instream, outstream, line, allLines, 
           counter, overview, i, fileinfo,
           readlineset, execlineset, outchar,
-          outputhtml, outputoverviewhtml, LookupWithDefault;
+          outputhtml, outputoverviewhtml, LookupWithDefault,
+          warnedExecNotRead;
+    
+    warnedExecNotRead := false;
     
     LookupWithDefault := function(dict, val, default)
         local v;
@@ -178,7 +181,19 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
             od;
             CloseStream(instream);
             
+            # Check for lines which are executed, but not read
             
+            if ForAny(fileinfo[2], x -> (x[1] = 0 and x[2] = 0) and not warnedExecNotRead) then
+              Print("Warning: There are statements in ", fileinfo[1],"\n",
+                    "which are marked executed but not marked as read. Your profile may not\n",
+                    "show lines which were read but not executed.\n",
+                    "Please call ProfileLineByLine before loading any files you wish to profile.\n",
+                    "You can use the --prof/--cover command line option to begin profiling\n",
+                    "before GAP starts to profile library code.\n",
+                    "(This warning will only be printed once.)\n");
+              warnedExecNotRead := true;
+            fi;
+
             Add(overview, rec(outname := outname, inname := infile,
             filetime := Sum(fileinfo[2], x -> x[3]),
             execlines := Length(Filtered(fileinfo[2], x -> (x[2] = 1))),

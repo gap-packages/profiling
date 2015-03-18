@@ -182,7 +182,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
             Add(overview, rec(outname := outname, inname := infile,
             filetime := Sum(fileinfo[2], x -> x[3]),
             execlines := Length(Filtered(fileinfo[2], x -> (x[2] = 1))),
-            readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] = 1 or x[2] = 1)))));
+            readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] = 1 and x[2] = 0)))));
             outputhtml(allLines, fileinfo[2], outstream);
 
             CloseStream(outstream);

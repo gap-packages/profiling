@@ -89,9 +89,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
       for i in [1..Length(lines)] do
         if not(IsBound(coverage[i])) or (coverage[i] = [0,0,0]) then
           outchar := "ignore";
-        elif coverage[i][2] = 1 then
+        elif coverage[i][2] >= 1 then
           outchar := "exec";
-        elif coverage[i][1] = 1 then
+        elif coverage[i][1] >= 1 then
           outchar := "missed";
         else
           Error("Internal error");
@@ -103,8 +103,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         str := ReplacedString(str, " ", "&nbsp;");
         PrintTo(outstream, "<a name=\"line",i,"\"></a><tr>");
         time := "";
-        if IsBound(coverage[i]) and coverage[i][2] = 1 then
-          time := String(coverage[i][3]);
+        if IsBound(coverage[i]) and coverage[i][2] >= 1 then
+          time := Concatenation(String(coverage[i][2]), " in ",String(coverage[i][3]),"ns");
         fi;
         totaltime := "";
         # totaltime := LookupWithDefault(linedict.recursetime, i, "");
@@ -196,8 +196,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
 
             Add(overview, rec(outname := outname, inname := infile,
             filetime := Sum(fileinfo[2], x -> x[3]),
-            execlines := Length(Filtered(fileinfo[2], x -> (x[2] = 1))),
-            readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] = 1 and x[2] = 0)))));
+            execlines := Length(Filtered(fileinfo[2], x -> (x[2] >= 1))),
+            readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] >= 1 and x[2] = 0)))));
             outputhtml(allLines, fileinfo[2], outstream);
 
             CloseStream(outstream);

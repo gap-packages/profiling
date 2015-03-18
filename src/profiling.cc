@@ -38,13 +38,13 @@ struct JsonParse
   std::string File;
 };
 
-bool ReadJson(const std::string& str, JsonParse& ret)
+bool ReadJson(char* str, JsonParse& ret)
 {
-  std::istringstream iss(str);
   picojson::value v;
-  iss >> v;
+  std::string err;
+  picojson::parse(v, str, str+strlen(str)+1, &err);
 //Pr("0",0,0);
-  if(iss.fail())
+  if(!err.empty())
     return false;
 //Pr("1",0,0);
   if(!v.is<picojson::object>())
@@ -135,15 +135,14 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     bool setupFunctionName = false;
 
     std::map<std::string, std::set<int> > read_lines;
-    std::map<std::string, std::set<int> > exec_lines;
+    std::map<std::string, std::map<int, int> > exec_lines;
     std::map<std::string, std::map<int, int> > runtime_lines;
 
-    std::map<FullFunction, int> runtime_in_function_map;
-    
-    std::map<std::vector<FullFunction>, int> runtime_stack_trace_map;
-    // We cache where we are in this map, as doing the lookup is expensive
-    int* runtime_stack_trace_lookup = 0;
 
+    std::map<std::vector<FullFunction>, int> runtime_stack_trace_map;
+    // We cache this, as doing the lookup is expensive
+    int* runtime_stack_trace_lookup = 0;
+    
     JsonParse prev_exec;
 
     std::vector<FullFunction> function_stack;
@@ -155,8 +154,8 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
       Obj gapstr = GAP_callFunction(readline, stream); 
       if(!IS_STRING(gapstr) || !IS_STRING_REP(gapstr))
         return Fail;
-      std::string str((char*)CHARS_STRING(gapstr));
-      if(str.length() == 0)
+      char* str = (char*)CHARS_STRING(gapstr);
+      if(*str == 0)
         break;
        
       JsonParse ret;
@@ -175,7 +174,10 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
             if(setupFunctionName)
               setupFunctionName = false;
             else if(!function_stack.empty())
-              function_stack.pop_back();  
+            {
+              function_stack.pop_back();
+            }
+            runtime_stack_trace_lookup = &(runtime_stack_trace_map[function_stack]);
           }break;
 
           case Read:
@@ -194,7 +196,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
           }
           else
           {
-            exec_lines[ret.File].insert(ret.Line);
+            exec_lines[ret.File][ret.Line]++;
             if(firstExec)
               firstExec = false;
             else
@@ -204,10 +206,8 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
               runtime_lines[prev_exec.File][prev_exec.Line]+=ret.Ticks;
               // Hard to know exactly where to charge these to --
               // this is easiest
-              if(!function_stack.empty())
-                runtime_in_function_map[function_stack.back()]+=ret.Ticks;
               if(runtime_stack_trace_lookup)
-                *runtime_stack_trace_lookup+=ret.Ticks;
+                *runtime_stack_trace_lookup += ret.Ticks;
             }
           }
         }
@@ -228,7 +228,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     for(std::map<std::string, std::set<int> >::iterator it = read_lines.begin(); it != read_lines.end(); ++it)
       filenames.insert(it->first);
     
-    for(std::map<std::string, std::set<int> >::iterator it = exec_lines.begin(); it != exec_lines.end(); ++it)
+    for(std::map<std::string, std::map<int,int> >::iterator it = exec_lines.begin(); it != exec_lines.end(); ++it)
       filenames.insert(it->first);
 
     for(std::map<std::string, std::map<int,int> >::iterator it = runtime_lines.begin(); it != runtime_lines.end(); ++it)
@@ -239,7 +239,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     for(std::set<std::string>::iterator it = filenames.begin(); it != filenames.end(); ++it)
     {
       const std::set<int>& read_set = read_lines[*it];
-      const std::set<int>& exec_set = exec_lines[*it];
+      std::map<int, int>& exec_set = exec_lines[*it];
       std::map<int,int>& runtime = runtime_lines[*it];
 
       int max_line = 0;
@@ -248,7 +248,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
         max_line = std::max(max_line, *(read_set.rbegin()));
 
       if(!exec_set.empty())
-        max_line = std::max(max_line, *(exec_set.rbegin()));
+        max_line = std::max(max_line, exec_set.rbegin()->first);
 
       if(!runtime.empty())
         max_line = std::max(max_line, runtime.rbegin()->first);
@@ -258,20 +258,12 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
       {
         std::vector<int> data;
         data.push_back(read_set.count(i));
-        data.push_back(exec_set.count(i));
+        data.push_back(exec_set[i]);
         data.push_back(runtime[i]);
         line_data.push_back(data); 
       }
 
       read_exec_data.push_back(std::make_pair(*it, line_data));
-    }
-
-
-    std::vector<std::pair<FullFunction, int> > function_runtimes;
-    for(std::map<FullFunction, int>::iterator it = runtime_in_function_map.begin();
-        it != runtime_in_function_map.end(); ++it)
-    {
-      function_runtimes.push_back(*it);
     }
 
     std::vector<std::pair<std::vector<FullFunction>, int> > function_stack_runtimes;
@@ -285,7 +277,6 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     GAPRecord r;
 
     r.set("line_info", read_exec_data);
-    r.set("fun_runtimes", function_runtimes);
     r.set("stack_runtimes", function_stack_runtimes);
 
     return GAP_make(r);

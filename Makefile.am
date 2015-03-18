@@ -32,7 +32,5 @@ distclean-local:
 	rm -rf bin/*
 	(cd doc ; ./clean)
 
-doc: doc/manual.six
-
-doc/manual.six: doc/*.xml PackageInfo.g
+doc:
 	($(GAPROOT)/bin/gap.sh -A makedoc.g)

@@ -56,7 +56,7 @@ end);
 ##
 InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, outdir)
     local infile, outname, instream, outstream, line, allLines, 
-          counter, overview, i, fileinfo,
+          counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml, LookupWithDefault,
           warnedExecNotRead;
@@ -73,7 +73,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         fi;
     end;
     
-    outputhtml := function(lines, coverage, outstream)
+    outputhtml := function(lines, coverage, subfunctions, outstream)
       local i, outchar, str, time, totaltime, calledfns, linkname, fn, name;
       PrintTo(outstream, "<html><body>\n",
         "<style>\n",
@@ -87,14 +87,14 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         "<table cellspacing='0' cellpadding='0'>\n");
       
       for i in [1..Length(lines)] do
-        if not(IsBound(coverage[i])) or (coverage[i] = [0,0,0]) then
+        if not(IsBound(coverage[i])) or (coverage[i] = [0,0,0,0]) then
           outchar := "ignore";
         elif coverage[i][2] >= 1 then
           outchar := "exec";
         elif coverage[i][1] >= 1 then
           outchar := "missed";
         else
-          Error("Internal error");
+          Error("Invalid profile - there were lines which were not executed, but took time!");
         fi;
         
         str := List(lines[i]);
@@ -104,20 +104,25 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         PrintTo(outstream, "<a name=\"line",i,"\"></a><tr>");
         time := "";
         if IsBound(coverage[i]) and coverage[i][2] >= 1 then
-          time := Concatenation(String(coverage[i][2]), " in ",String(coverage[i][3]),"ns");
+          time := String(coverage[i][2]) ;
+          if coverage[i][3] >= 1 or coverage[i][4] >= 1 then
+            time := Concatenation(time, " in ",String(coverage[i][3]),"ns (", String(coverage[i][4]), "ns in children)");
+          fi;
         fi;
         totaltime := "";
         # totaltime := LookupWithDefault(linedict.recursetime, i, "");
         calledfns := "";
-#        for fn in LookupWithDefault(linedict.calledfuncs, i, []) do
-#          linkname := ReplacedString(fn.file, "/", "_");
-#          Append(linkname, ".html");
-#          name := fn.shortname;
-#          if name = "nameless" then
-#            name := fn.longname;
-#          fi;
-#          Append(calledfns, Concatenation("<a href=\"",linkname,"#line",fn.line,"\">",name,"</a> "));
-#        od;
+        if Length(subfunctions) >= i then
+          for fn in subfunctions[i] do
+            linkname := ReplacedString(fn.filename, "/", "_");
+            Append(linkname, ".html");
+            name := fn.name;
+            if name = "nameless" then
+              name := Concatenation(fn.filename, String(fn.line));
+            fi;
+            Append(calledfns, Concatenation("<a href=\"",linkname,"#line",String(fn.line),"\">",name,"</a> "));
+          od;
+        fi;
         
         PrintTo(outstream, "<td><p class='linenum ",outchar,"'>",i,"</p></td>");
         PrintTo(outstream, "<td>",time,"</td><td>",totaltime,"</td>");
@@ -163,7 +168,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
     end;
     
     overview := [];
-    for fileinfo in data.line_info do
+    for filenum in [1..Length(data.line_info)] do
+        fileinfo := data.line_info[filenum];
+        callinfo := data.line_function_calls[filenum];
         infile := fileinfo[1];
         if Length(indir) <= Length(infile)
                 and indir = infile{[1..Length(indir)]} then
@@ -198,7 +205,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
             filetime := Sum(fileinfo[2], x -> x[3]),
             execlines := Length(Filtered(fileinfo[2], x -> (x[2] >= 1))),
             readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] >= 1 and x[2] = 0)))));
-            outputhtml(allLines, fileinfo[2], outstream);
+            outputhtml(allLines, fileinfo[2], callinfo[2], outstream);
 
             CloseStream(outstream);
         fi;

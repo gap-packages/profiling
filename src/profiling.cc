@@ -18,14 +18,15 @@ Obj TestCommand(Obj self)
     return INTOBJ_INT(42);
 }
 
-enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4 };
+enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4, StringId = 5, InvalidType = -1};
 
 ProfType StringToProf(const std::string& s)
 {
-  if(s == "R") return Read;
-  if(s == "E") return Exec;
-  if(s == "I") return IntoFun;
-  if(s == "O") return OutFun;
+  if(s[0] == 'R') return Read;
+  if(s[0] == 'E') return Exec;
+  if(s[0] == 'I') return IntoFun;
+  if(s[0] == 'O') return OutFun;
+  if(s[0] == 'S') return StringId;
   throw GAPException("Invalid Type in profile");
 }
 
@@ -35,7 +36,12 @@ struct JsonParse
   std::string Fun;
   int Ticks;
   int Line;
+  int EndLine;
   std::string File;
+  int FileId;
+  
+  JsonParse() : Type(InvalidType), Ticks(-1), Line(-1), EndLine(-1), FileId(-1)
+    { }
 };
 
 bool ReadJson(char* str, JsonParse& ret)
@@ -55,23 +61,42 @@ bool ReadJson(char* str, JsonParse& ret)
 //Pr("3",0,0);
   ret.Type = StringToProf(v.get("Type").get<std::string>());
 
-  if(ret.Type == IntoFun || ret.Type == OutFun)
+  if(ret.Type == StringId)
   {
-    if(!v.contains("Fun") || !v.get("Fun").is<std::string>())
+    if(!v.contains("File") || !v.get("File").is<std::string>())
       return false;
+    ret.File = v.get("File").get<std::string>();
 
-    ret.Fun = v.get("Fun").get<std::string>();
+    if(!v.contains("FileId") || !v.get("FileId").is<int64_t>())
+      return false;
+    ret.FileId = v.get("FileId").get<int64_t>();
     return true;
   }
-
+    
   if(!v.contains("Line") || !v.get("Line").is<int64_t>())
     return false;
   ret.Line = v.get("Line").get<int64_t>();
       
-  if(!v.contains("File") || !v.get("File").is<std::string>())
-    return false;
-  ret.File = v.get("File").get<std::string>();
+  if(ret.Type == IntoFun || ret.Type == OutFun)
+  {
+    if(!v.contains("Fun") || !v.get("Fun").is<std::string>())
+      return false;
+    ret.Fun = v.get("Fun").get<std::string>();
 
+    if(!v.contains("EndLine") || !v.get("EndLine").is<int64_t>())
+      return false;
+    ret.EndLine = v.get("EndLine").get<int64_t>();
+    
+    if(!v.contains("File") || !v.get("File").is<std::string>())
+      return false;
+    ret.File = v.get("File").get<std::string>();
+    return true;
+  }
+  
+  if(!v.contains("FileId") || !v.get("FileId").is<int64_t>())
+    return false;
+  ret.FileId = v.get("FileId").get<int64_t>();
+ 
   ret.Ticks = 0;
 
   // this one is optional
@@ -88,16 +113,19 @@ struct FullFunction
   std::string name;
   std::string filename;
   int line;
-
+  int endline;
+  
   FullFunction() {}
-  FullFunction(const std::string& _name, const std::string _file, int _line)
-    : name(_name), filename(_file), line(_line)
+  FullFunction(const std::string& _name, const std::string _file, int _line, int _endline)
+    : name(_name), filename(_file), line(_line), endline(_endline)
   { }
 
   friend bool operator<(const FullFunction& lhs, const FullFunction& rhs)
   {
     if(lhs.line < rhs.line) return true;
     if(lhs.line > rhs.line) return false;
+    if(lhs.endline < rhs.endline) return true;
+    if(lhs.endline > rhs.endline) return true;
     if(lhs.name < rhs.name) return true;
     if(lhs.name > rhs.name) return false;
     if(lhs.filename < rhs.filename) return true;
@@ -115,6 +143,7 @@ struct GAP_maker<FullFunction>
   {
     GAPRecord r;
     r.set("line", f.line);
+    r.set("endline", f.endline);
     r.set("name", f.name);
     r.set("filename", f.filename);
     return r.raw_obj();
@@ -122,10 +151,8 @@ struct GAP_maker<FullFunction>
 };
 }
 
-FullFunction buildFunctionName(const std::string& s, const JsonParse& jp)
-{
-  return FullFunction(s, jp.File, jp.Line);
-}
+FullFunction buildFunctionName(const JsonParse& jp)
+{ return FullFunction(jp.Fun, jp.File, jp.Line, jp.EndLine); }
 
 struct StackTrace
 {
@@ -153,7 +180,7 @@ struct StackTrace
 
 
 void dumpRuntimes_in(StackTrace* st,
-                     std::vector<std::pair<std::vector<FullFunction>, int > >& ret,
+                     std::vector<std::pair<std::vector<FullFunction>, Int > >& ret,
                      std::vector<FullFunction>& stack)
 {
     ret.push_back(std::make_pair(stack, st->runtime));
@@ -167,33 +194,56 @@ void dumpRuntimes_in(StackTrace* st,
     }
 }
 
-std::vector<std::pair<std::vector<FullFunction>, int > > dumpRuntimes(StackTrace* st)
+std::vector<std::pair<std::vector<FullFunction>, Int > > dumpRuntimes(StackTrace* st)
 {
-    std::vector<std::pair<std::vector<FullFunction>, int > > ret;
+    std::vector<std::pair<std::vector<FullFunction>, Int > > ret;
     std::vector<FullFunction> stack;
     dumpRuntimes_in(st, ret, stack);
     return ret;
 }
-     
+
+struct TimeStash
+{
+  Int runtime;
+  Int runtime_with_children;
+  Int total_ticks;
+  
+  TimeStash(Int _l, Int _cl, Int _tt) :
+  runtime(_l), runtime_with_children(_cl),
+  total_ticks(_tt) { }
+};
+
 Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 {
     GAPFunction readline("IO_ReadLine");
- 
+    int failedparse = 0;
     bool firstExec = true;
-    bool setupFunctionName = false;
 
-    std::map<std::string, std::set<int> > read_lines;
-    std::map<std::string, std::map<int, int> > exec_lines;
-    std::map<std::string, std::map<int, int> > runtime_lines;
-
+    std::map<Int, std::string> filename_map;
+    
+    std::map<Int, std::set<Int> > read_lines;
+    std::map<Int, std::map<Int, Int> > exec_lines;
+    std::map<Int, std::map<Int, Int> > runtime_lines;
+    std::map<Int, std::map<Int, Int> > runtime_with_children_lines;
+    
+    std::map<Int, std::map<Int, std::set<FullFunction> > > called_functions;
     StackTrace stacktrace;
     StackTrace* current_stack = &stacktrace;
     
+    // prev_exec is the last function executed, calling_exec is the statement which
+    // we would currently say called a function. The only time when there differ
+    // is immediately after returning from a function.
     JsonParse prev_exec;
+    JsonParse calling_exec;
 
+    // These keeps track of us going down our function stack
     std::vector<FullFunction> function_stack;
+    std::vector<JsonParse> line_stack;
+    // this stores various time values
+    // when we call a function, so we can correct everything on return.
+    std::vector<TimeStash> line_times_stack;
 
-    std::string short_function_name;
+    long long total_ticks = 0;
 
     while(true)
     {
@@ -209,61 +259,79 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
       {
         switch(ret.Type)
         {
+          case InvalidType: ErrorReturnVoid("Internal Error",0,0,""); break;
+          case StringId:
+            filename_map[ret.FileId] = ret.File;
+          break;
           case IntoFun:
           {
-            short_function_name = ret.Fun;
-            setupFunctionName = true;
-          }
-          break;
-          case OutFun:
-          {
-            if(setupFunctionName)
-              setupFunctionName = false;
-            else if(current_stack->parent)
-            {
-                current_stack = current_stack->parent;
-            }
-          }break;
-
-          case Read:
-          case Exec:
-
-          if(setupFunctionName)
-          {
-            function_stack.push_back(buildFunctionName(short_function_name, ret));
-            
+            called_functions[calling_exec.FileId][calling_exec.Line].insert(buildFunctionName(ret));
+            function_stack.push_back(buildFunctionName(ret));
+            line_stack.push_back(calling_exec);
+            line_times_stack.push_back(
+              TimeStash(runtime_lines[calling_exec.FileId][calling_exec.Line],
+                        runtime_with_children_lines[calling_exec.FileId][calling_exec.Line],
+                        total_ticks));
             StackTrace* next_stack = &((*(current_stack->children))[function_stack.back()]);
             if(!next_stack->parent)
                 next_stack->parent = current_stack;
             assert(next_stack->parent == current_stack);
             current_stack = next_stack;
             (current_stack->calls)++;
-            setupFunctionName = false;
           }
+          break;
+          case OutFun:
+          {
+            if(current_stack->parent)
+            {
+                current_stack = current_stack->parent;
+                calling_exec = line_stack.back();
+                TimeStash ts = line_times_stack.back();
+                runtime_with_children_lines[calling_exec.FileId][calling_exec.Line] =
+                  ts.runtime_with_children + (total_ticks - ts.total_ticks) -
+                    (runtime_lines[calling_exec.FileId][calling_exec.Line] - ts.runtime);
+                
+                line_stack.pop_back();
+                line_times_stack.pop_back();
+            }
+          }
+          break;
+          
+          case Read:
+          case Exec:
           
           if(ret.Type == Read)
           {
-            read_lines[ret.File].insert(ret.Line);
+            read_lines[ret.FileId].insert(ret.Line);
           }
           else
           {
-            exec_lines[ret.File][ret.Line]++;
+            exec_lines[ret.FileId][ret.Line]++;
             if(firstExec)
               firstExec = false;
             else
             {
-
               // The ticks are since the last executed line
-              runtime_lines[prev_exec.File][prev_exec.Line]+=ret.Ticks;
+              runtime_lines[prev_exec.FileId][prev_exec.Line]+=ret.Ticks;
               // Hard to know exactly where to charge these to --
               // this is easiest
               (current_stack->runtime) += ret.Ticks;
+              total_ticks += ret.Ticks;
             }
           }
         }
       }
+      else
+      {
+        // We allow a couple of failed parses to deal with truncated files
+        failedparse++;
+        if(failedparse > 2) {
+          return Fail;
+        }
+      }
+        
 
-      if(ret.Type == Exec) prev_exec = ret;
+      if(ret.Type == Exec) { prev_exec = ret; calling_exec = ret; }
     }
     
 
@@ -271,28 +339,35 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     // This stores the read, exec and runtime data.
     // vector of [filename, [ [read,exec,runtime] of line 1, [read,exec,runtime] of line 2, ... ] ]
     
-    std::vector<std::pair<std::string, std::vector<std::vector<int> > > > read_exec_data;
+    std::vector<std::pair<std::string, std::vector<std::vector<Int> > > > read_exec_data;
+    
+    std::vector<std::pair<std::string, std::vector<std::set<FullFunction> > > > called_functions_ret;
     
     // First gather all used filenames
-    std::set<std::string> filenames;
-    for(std::map<std::string, std::set<int> >::iterator it = read_lines.begin(); it != read_lines.end(); ++it)
-      filenames.insert(it->first);
-    
-    for(std::map<std::string, std::map<int,int> >::iterator it = exec_lines.begin(); it != exec_lines.end(); ++it)
-      filenames.insert(it->first);
+    std::set<Int> filenameids;
 
-    for(std::map<std::string, std::map<int,int> >::iterator it = runtime_lines.begin(); it != runtime_lines.end(); ++it)
-      filenames.insert(it->first);
-
-    // Now we have all out filenames!
+    for(std::map<Int, std::set<Int> >::iterator it = read_lines.begin(); it != read_lines.end(); ++it)
+      filenameids.insert(it->first);
     
-    for(std::set<std::string>::iterator it = filenames.begin(); it != filenames.end(); ++it)
+    for(std::map<Int, std::map<Int,Int> >::iterator it = exec_lines.begin(); it != exec_lines.end(); ++it)
+      filenameids.insert(it->first);
+
+    for(std::map<Int, std::map<Int,Int> >::iterator it = runtime_lines.begin(); it != runtime_lines.end(); ++it)
+      filenameids.insert(it->first);
+
+    // Now we have all our filenames!
+    // clear out a marker we use for start of file
+    filenameids.erase(-1);
+    
+    for(std::set<Int>::iterator it = filenameids.begin(); it != filenameids.end(); ++it)
     {
-      const std::set<int>& read_set = read_lines[*it];
-      std::map<int, int>& exec_set = exec_lines[*it];
-      std::map<int,int>& runtime = runtime_lines[*it];
+      const std::set<Int>& read_set = read_lines[*it];
+      std::map<Int,Int>& exec_set = exec_lines[*it];
+      std::map<Int,Int>& runtime = runtime_lines[*it];
+      std::map<Int,Int>& runtime_children = runtime_with_children_lines[*it];
+      std::map<Int, std::set<FullFunction> >& functions = called_functions[*it];
 
-      int max_line = 0;
+      Int max_line = 0;
 
       if(!read_set.empty())
         max_line = std::max(max_line, *(read_set.rbegin()));
@@ -303,32 +378,42 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
       if(!runtime.empty())
         max_line = std::max(max_line, runtime.rbegin()->first);
 
-      std::vector<std::vector<int> > line_data;
+      if(!runtime_with_children_lines.empty())
+        max_line = std::max(max_line, runtime_with_children_lines.rbegin()->first);
+      
+      if(!called_functions.empty())
+        max_line = std::max(max_line, called_functions.rbegin()->first);
+        
+      std::vector<std::vector<Int> > line_data;
+      std::vector<std::set<FullFunction> > called_data;
       for(int i = 1; i <= max_line; ++i)
       {
-        std::vector<int> data;
+        std::vector<Int> data;
         data.push_back(read_set.count(i));
         data.push_back(exec_set[i]);
         data.push_back(runtime[i]);
+        data.push_back(runtime_children[i]);
         line_data.push_back(data); 
+        
+        called_data.push_back(functions[i]);
       }
 
-      read_exec_data.push_back(std::make_pair(*it, line_data));
+      if(filename_map.count(*it) == 0)
+      {
+        ErrorReturnVoid("Invalid profile data, cannot find fileid %d\n", *it, 0, "");
+      }
+      
+      read_exec_data.push_back(std::make_pair(filename_map[*it], line_data));
+      called_functions_ret.push_back(std::make_pair(filename_map[*it], called_data));
     }
 
-        std::vector<std::pair<std::vector<FullFunction>, int> > function_stack_runtimes =
-            dumpRuntimes(&stacktrace);
- //   for(std::map<std::vector<FullFunction>, int>::iterator it = runtime_stack_trace_map.begin(); 
-   //     it != runtime_stack_trace_map.end(); ++it)
-//    {
-  //    function_stack_runtimes.push_back(*it);
-    //}
-
+    std::vector<std::pair<std::vector<FullFunction>, Int> > function_stack_runtimes = dumpRuntimes(&stacktrace);
 
     GAPRecord r;
 
     r.set("line_info", read_exec_data);
     r.set("stack_runtimes", function_stack_runtimes);
+    r.set("line_function_calls", called_functions_ret);
 
     return GAP_make(r);
 }

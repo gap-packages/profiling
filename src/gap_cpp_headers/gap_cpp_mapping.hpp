@@ -8,6 +8,7 @@
 #include <deque>
 #include <list>
 #include <utility>
+#include <set>
 
 // We have to include this to get around problems with the 'extern C' wrapping of src/compiled.h,
 // which includes gmp, which in C++ mode has some C++ templates.
@@ -379,6 +380,15 @@ template<typename T>
 struct GAP_maker<std::vector<T> >
 {
     Obj operator()(const std::vector<T>& v) const
+    {
+        return CopyContainerToGap(v);
+    }
+};
+
+template<typename T>
+struct GAP_maker<std::set<T> >
+{
+    Obj operator()(const std::set<T>& v) const
     {
         return CopyContainerToGap(v);
     }

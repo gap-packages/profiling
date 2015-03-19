@@ -127,6 +127,51 @@ FullFunction buildFunctionName(const std::string& s, const JsonParse& jp)
   return FullFunction(s, jp.File, jp.Line);
 }
 
+struct StackTrace
+{
+    int runtime;
+    int calls;
+    std::map<FullFunction, StackTrace>* children;
+    StackTrace* parent;
+    
+    StackTrace() : runtime(0), calls(0),
+    children(new std::map<FullFunction, StackTrace>), parent(NULL)
+    { }
+    
+    StackTrace(StackTrace* p) : runtime(0), calls(0),
+    children(new std::map<FullFunction, StackTrace>), parent(p)
+    { }
+    
+    ~StackTrace()
+    { delete children; }
+private:
+    StackTrace(StackTrace&);
+};
+
+
+void dumpRuntimes_in(StackTrace* st,
+                     std::vector<std::pair<std::vector<FullFunction>, int > >& ret,
+                     std::vector<FullFunction>& stack)
+{
+    ret.push_back(std::make_pair(stack, st->runtime));
+    for(std::map<FullFunction, StackTrace>::iterator it = st->children->begin();
+        it != st->children->end();
+        ++it)
+    {
+        stack.push_back(it->first);
+        dumpRuntimes_in(&(it->second), ret, stack);
+        stack.pop_back();
+    }
+}
+
+std::vector<std::pair<std::vector<FullFunction>, int > > dumpRuntimes(StackTrace* st)
+{
+    std::vector<std::pair<std::vector<FullFunction>, int > > ret;
+    std::vector<FullFunction> stack;
+    dumpRuntimes_in(st, ret, stack);
+    return ret;
+}
+     
 Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 {
     GAPFunction readline("IO_ReadLine");
@@ -138,10 +183,8 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     std::map<std::string, std::map<int, int> > exec_lines;
     std::map<std::string, std::map<int, int> > runtime_lines;
 
-
-    std::map<std::vector<FullFunction>, int> runtime_stack_trace_map;
-    // We cache this, as doing the lookup is expensive
-    int* runtime_stack_trace_lookup = 0;
+    StackTrace stacktrace;
+    StackTrace* current_stack = &stacktrace;
     
     JsonParse prev_exec;
 
@@ -173,11 +216,10 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
           {
             if(setupFunctionName)
               setupFunctionName = false;
-            else if(!function_stack.empty())
+            else if(current_stack->parent)
             {
-              function_stack.pop_back();
+                current_stack = current_stack->parent;
             }
-            runtime_stack_trace_lookup = &(runtime_stack_trace_map[function_stack]);
           }break;
 
           case Read:
@@ -186,7 +228,13 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
           if(setupFunctionName)
           {
             function_stack.push_back(buildFunctionName(short_function_name, ret));
-            runtime_stack_trace_lookup = &(runtime_stack_trace_map[function_stack]);
+            
+            StackTrace* next_stack = &((*(current_stack->children))[function_stack.back()]);
+            if(!next_stack->parent)
+                next_stack->parent = current_stack;
+            assert(next_stack->parent == current_stack);
+            current_stack = next_stack;
+            (current_stack->calls)++;
             setupFunctionName = false;
           }
           
@@ -206,8 +254,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
               runtime_lines[prev_exec.File][prev_exec.Line]+=ret.Ticks;
               // Hard to know exactly where to charge these to --
               // this is easiest
-              if(runtime_stack_trace_lookup)
-                *runtime_stack_trace_lookup += ret.Ticks;
+              (current_stack->runtime) += ret.Ticks;
             }
           }
         }
@@ -266,12 +313,13 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
       read_exec_data.push_back(std::make_pair(*it, line_data));
     }
 
-    std::vector<std::pair<std::vector<FullFunction>, int> > function_stack_runtimes;
-    for(std::map<std::vector<FullFunction>, int>::iterator it = runtime_stack_trace_map.begin(); 
-        it != runtime_stack_trace_map.end(); ++it)
-    {
-      function_stack_runtimes.push_back(*it);
-    }
+        std::vector<std::pair<std::vector<FullFunction>, int> > function_stack_runtimes =
+            dumpRuntimes(&stacktrace);
+ //   for(std::map<std::vector<FullFunction>, int>::iterator it = runtime_stack_trace_map.begin(); 
+   //     it != runtime_stack_trace_map.end(); ++it)
+//    {
+  //    function_stack_runtimes.push_back(*it);
+    //}
 
 
     GAPRecord r;

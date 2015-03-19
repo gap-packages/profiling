@@ -144,8 +144,11 @@ struct StackTrace
     
     ~StackTrace()
     { delete children; }
-private:
-    StackTrace(StackTrace&);
+
+    StackTrace(const StackTrace& st) :
+    runtime(st.runtime), calls(st.calls), children(st.children), parent(st.parent)
+    { }
+
 };
 
 

@@ -183,7 +183,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
             
             # Check for lines which are executed, but not read
             
-            if ForAny(fileinfo[2], x -> (x[1] = 0 and x[2] = 0) and not warnedExecNotRead) then
+            if ForAny(fileinfo[2], x -> (x[1] = 0 and x[2] > 0) and not warnedExecNotRead) then
               Print("Warning: There are statements in ", fileinfo[1],"\n",
                     "which are marked executed but not marked as read. Your profile may not\n",
                     "show lines which were read but not executed.\n",

@@ -154,6 +154,8 @@ struct GAP_maker<FullFunction>
 FullFunction buildFunctionName(const JsonParse& jp)
 { return FullFunction(jp.Fun, jp.File, jp.Line, jp.EndLine); }
 
+// We lazily set up 'children' because we can't be bothered using
+// a shared_ptr
 struct StackTrace
 {
     int runtime;
@@ -162,19 +164,28 @@ struct StackTrace
     StackTrace* parent;
     
     StackTrace() : runtime(0), calls(0),
-    children(new std::map<FullFunction, StackTrace>), parent(NULL)
+    children(NULL), parent(NULL)
     { }
     
     StackTrace(StackTrace* p) : runtime(0), calls(0),
-    children(new std::map<FullFunction, StackTrace>), parent(p)
+    children(NULL), parent(p)
     { }
     
+    void setupChildren()
+    {
+      if(!children)
+        children = new std::map<FullFunction, StackTrace>;
+    }
+
     ~StackTrace()
-    { delete children; }
+    {
+      if(children)
+        delete children;
+    }
 
     StackTrace(const StackTrace& st) :
     runtime(st.runtime), calls(st.calls), children(st.children), parent(st.parent)
-    { }
+    { assert(!children); }
 
 };
 
@@ -228,6 +239,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     
     std::map<Int, std::map<Int, std::set<FullFunction> > > called_functions;
     StackTrace stacktrace;
+    stacktrace.setupChildren();
     StackTrace* current_stack = &stacktrace;
     
     // prev_exec is the last function executed, calling_exec is the statement which
@@ -272,7 +284,10 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
               TimeStash(runtime_lines[calling_exec.FileId][calling_exec.Line],
                         runtime_with_children_lines[calling_exec.FileId][calling_exec.Line],
                         total_ticks));
+
             StackTrace* next_stack = &((*(current_stack->children))[function_stack.back()]);
+            next_stack->setupChildren();
+
             if(!next_stack->parent)
                 next_stack->parent = current_stack;
             assert(next_stack->parent == current_stack);

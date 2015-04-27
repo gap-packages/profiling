@@ -18,7 +18,7 @@ Obj TestCommand(Obj self)
     return INTOBJ_INT(42);
 }
 
-enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4, StringId = 5, InvalidType = -1};
+enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4, StringId = 5, Info = 6, InvalidType = -1};
 
 ProfType StringToProf(const std::string& s)
 {
@@ -27,6 +27,7 @@ ProfType StringToProf(const std::string& s)
   if(s[0] == 'I') return IntoFun;
   if(s[0] == 'O') return OutFun;
   if(s[0] == 'S') return StringId;
+  if(s[0] == 'X') return Info;
   throw GAPException("Invalid Type in profile");
 }
 
@@ -334,6 +335,8 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
               total_ticks += ret.Ticks;
             }
           }
+          
+          case Info:; // ignored
         }
       }
       else
@@ -347,6 +350,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
         
 
       if(ret.Type == Exec) { prev_exec = ret; calling_exec = ret; }
+      if(ret.Type == Info) { calling_exec = ret; }
     }
     
 
@@ -415,11 +419,13 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 
       if(filename_map.count(*it) == 0)
       {
-        ErrorReturnVoid("Invalid profile data, cannot find fileid %d\n", *it, 0, "");
+        Pr("Warning: damaged profile, cannot find a filename to match id %d", *it, 0L);
       }
-      
-      read_exec_data.push_back(std::make_pair(filename_map[*it], line_data));
-      called_functions_ret.push_back(std::make_pair(filename_map[*it], called_data));
+      else
+      {
+        read_exec_data.push_back(std::make_pair(filename_map[*it], line_data));
+        called_functions_ret.push_back(std::make_pair(filename_map[*it], called_data));
+      }
     }
 
     std::vector<std::pair<std::vector<FullFunction>, Int> > function_stack_runtimes = dumpRuntimes(&stacktrace);

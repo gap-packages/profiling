@@ -6,6 +6,9 @@
 InstallGlobalFunction( "ReadLineByLineProfile",
 function(filename)
   local f, res;
+  if IsLineByLineProfileActive() then
+    Info(InfoWarning, 1, "Reading Profile while still generating it!");
+  fi;
   f := IO_CompressedFile(filename, "r");
   res := READ_PROFILE_FROM_STREAM(f, 0);
   IO_Close(f);
@@ -145,25 +148,25 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
       PrintTo(outstream, "<html><body>\n",
         "<style>\n</style>\n",
         "<table cellspacing='0' cellpadding='0'>\n",
-        "<tr><td valign='top'>\n");
-      
-      for i in [1..Length(overview)] do
-        PrintTo(outstream, "<p><a href='",
-           Remove(SplitString(overview[i].outname,"/")),
-           "'>",overview[i].inname,"</a></p>");
-      od;
-      
-      PrintTo(outstream, "</td><td class='text' valign='top'>");
+        "<tr><th>File</th><th>Coverage%</th><th>Coverage Lines</th><th>Time</th><th>Statements</th></tr>\n"
+        );
       
       for i in overview do
+        PrintTo(outstream, "<tr>");
+        PrintTo(outstream, "<td><a href='",
+           Remove(SplitString(i.outname,"/")),
+           "'>",i.inname,"</a></td>");
+
         codecover := 1 - (i.readnotexeclines / (i.execlines + i.readnotexeclines));
         # We have to do a slightly horrible thing to get the formatting we want
         codecover := String(Floor(codecover*100.0));
-        PrintTo(outstream, "<p>",codecover{[1..Length(codecover)-1]},"% (",
-          i.execlines,"/",i.execlines + i.readnotexeclines,"), ",i.filetime, " ns</p>");
+        PrintTo(outstream, "<td>",codecover{[1..Length(codecover)-1]},"</td>");
+        PrintTo(outstream, "<td>", i.execlines,"/",i.execlines + i.readnotexeclines,"</td>");
+        PrintTo(outstream, "<td>",i.filetime, "</td><td>",i.fileexec,"</td>");
+        PrintTo(outstream, "</tr>");
       od;
       
-      PrintTo(outstream,"</td></tr></table></body></html>");
+      PrintTo(outstream,"</table></body></html>");
       CloseStream(outstream);
     end;
     
@@ -203,6 +206,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
 
             Add(overview, rec(outname := outname, inname := infile,
             filetime := Sum(fileinfo[2], x -> x[3]),
+            fileexec := Sum(fileinfo[2], x -> x[2]),
             execlines := Length(Filtered(fileinfo[2], x -> (x[2] >= 1))),
             readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] >= 1 and x[2] = 0)))));
             outputhtml(allLines, fileinfo[2], callinfo[2], outstream);

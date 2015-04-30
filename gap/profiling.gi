@@ -62,7 +62,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
           counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml, LookupWithDefault,
-          warnedExecNotRead;
+          warnedExecNotRead, outputCSS, filebuf;
     
     warnedExecNotRead := false;
     
@@ -76,19 +76,44 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         fi;
     end;
     
-    outputhtml := function(lines, coverage, subfunctions, outstream)
-      local i, outchar, str, time, totaltime, calledfns, linkname, fn, name;
-      PrintTo(outstream, "<html><body>\n",
+    outputCSS := function(outstream);
+    PrintTo(outstream, 
         "<style>\n",
-        ".linenum { text-align: right; border-right: 3px solid #FFFFFF; }\n",
-        ".exec { border-right: 3px solid #2EFE2E; }\n",
-        ".missed { border-right: 3px solid #FE2E64; }\n",
-        ".ignore { border-right: 3px solid #BDBDBD; }\n",
-        " td {border-right: 5px solid #FFFFFF;}\n",
-        "}\n",
-        "</style>\n",
-        "<table cellspacing='0' cellpadding='0'>\n");
-      
+"table { border-collapse: collapse }\n",
+"tr .linenum { text-align: right; }\n",
+"tr .exec { background-color: #2EFE2E; }\n",
+"tr .missed { background-color: #FE2E64; }\n",
+"td, th {\n",
+"    border: 1px solid #98bf21;\n",
+"    padding: 3px 7px 2px 7px;\n",
+"}\n",
+"tr:nth-child(even) {\n",
+"    background-color: #FFF;\n",
+"}\n",
+"tr:nth-child(odd) {\n",
+"    background-color: #EFE;\n",
+"}\n",
+"th {\n",
+"    font-size: 1.1em;\n",
+"    text-align: left;\n",
+"    padding-top: 5px;\n",
+"    padding-bottom: 4px;\n",
+"    background-color: #A7C942;\n",
+"    color: #ffffff;\n",
+"}\n",
+"table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after {\n",
+"    content: \" \\25B4\\25BE\"\n", 
+"}\n",
+"</style>");
+    end;
+
+    outputhtml := function(lines, coverage, subfunctions, outstream)
+      local i, outchar, str, time, calls, calledfns, linkname, fn, name, filebuf;
+      PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
+      outputCSS(outstream);
+
+      PrintTo(outstream, "<table class=\"sortable\">\n");
+      PrintTo(outstream, "<tr><th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><tr>\n");      
       for i in [1..Length(lines)] do
         if not(IsBound(coverage[i])) or (coverage[i] = [0,0,0,0]) then
           outchar := "ignore";
@@ -104,15 +129,16 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         str := ReplacedString(str, "&", "&amp;");
         str := ReplacedString(str, "<", "&lt;");
         str := ReplacedString(str, " ", "&nbsp;");
-        PrintTo(outstream, "<a name=\"line",i,"\"></a><tr>");
-        time := "";
+        PrintTo(outstream, "<tr>");
+        time := "<td></td><td></td><td></td>";
         if IsBound(coverage[i]) and coverage[i][2] >= 1 then
-          time := String(coverage[i][2]) ;
+          calls := String(coverage[i][2]) ;
           if coverage[i][3] >= 1 or coverage[i][4] >= 1 then
-            time := Concatenation(time, " in ",String(coverage[i][3]),"ns (", String(coverage[i][4]), "ns in children)");
+            time := Concatenation("<td>",calls, "</td><td>",String(coverage[i][3]),"</td><td>", String(coverage[i][4]), "</td>");
+          else
+            time := Concatenation("<td>",calls,"</td><td></td><td></td>");
           fi;
         fi;
-        totaltime := "";
         # totaltime := LookupWithDefault(linedict.recursetime, i, "");
         calledfns := "";
         if Length(subfunctions) >= i then
@@ -127,10 +153,10 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
           od;
         fi;
         
-        PrintTo(outstream, "<td><p class='linenum ",outchar,"'>",i,"</p></td>");
-        PrintTo(outstream, "<td>",time,"</td><td>",totaltime,"</td>");
+        PrintTo(outstream, "<td><a name=\"line",i,"\"></a><div class='linenum ",outchar,"'>",i,"</div></td>");
+        PrintTo(outstream, time);
         PrintTo(outstream, "<td><span><tt>",str,"</tt></span></td>");
-        PrintTo(outstream, "<td><span>",calledfns,"</span></td");
+        PrintTo(outstream, "<td><span>",calledfns,"</span></td>");
         PrintTo(outstream, "</tr>");
       od;
             
@@ -145,9 +171,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
       filename := Concatenation(outdir, "/index.html");
       outstream := OutputTextFile(filename, false);
       SetPrintFormattingStatus(outstream, false);
-      PrintTo(outstream, "<html><body>\n",
-        "<style>\n</style>\n",
-        "<table cellspacing='0' cellpadding='0'>\n",
+      PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
+      outputCSS(outstream);
+      PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
         "<tr><th>File</th><th>Coverage%</th><th>Coverage Lines</th><th>Time</th><th>Statements</th></tr>\n"
         );
       
@@ -169,7 +195,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
       PrintTo(outstream,"</table></body></html>");
       CloseStream(outstream);
     end;
-    
+   
     overview := [];
     for filenum in [1..Length(data.line_info)] do
         fileinfo := data.line_info[filenum];
@@ -213,7 +239,14 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
 
             CloseStream(outstream);
         fi;
-    od;    
+    od;   
+
+    filebuf := ReadAll(InputTextFile(Filename(DirectoriesPackageLibrary( "profiling", "data"), "sorttable.js")));
+    outstream := OutputTextFile(Concatenation(outdir, "/sorttable.js"), false);
+    SetPrintFormattingStatus(outstream, false);
+    PrintTo(outstream, filebuf);
+    CloseStream(outstream); 
+
     # Output an overview page
     outputoverviewhtml(overview, outdir);
 end);

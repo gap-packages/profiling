@@ -32,5 +32,7 @@ distclean-local:
 	rm -rf bin/*
 	(cd doc ; ./clean)
 
+.PHONY: doc
+
 doc:
 	($(GAPROOT)/bin/gap.sh -A makedoc.g)

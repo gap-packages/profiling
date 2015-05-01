@@ -69,7 +69,12 @@ Dependencies := rec(
 ),
 
 AvailabilityTest := function()
-        return true;
+        local so_exists;
+        so_exists := (Filename(DirectoriesPackagePrograms("profiling"), "profiling.so") <> fail);
+        if not(so_exists) then
+          Info(InfoWarning, 1, "Kernel extension not built for profiling package");
+        fi;
+        return so_exists;
     end,
 
 TestFile := "tst/testall.g",

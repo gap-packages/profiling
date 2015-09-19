@@ -274,6 +274,9 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
         {
           case InvalidType: ErrorReturnVoid("Internal Error",0,0,""); break;
           case StringId:
+            if(filename_map.count(ret.FileId) > 0) {
+              ErrorReturnVoid("Invalid input - Reused file-id",0,0,""); break;
+            }
             filename_map[ret.FileId] = ret.File;
           break;
           case IntoFun:

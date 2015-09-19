@@ -40,7 +40,7 @@ struct JsonParse
   int EndLine;
   std::string File;
   int FileId;
-  
+
   JsonParse() : Type(InvalidType), Ticks(-1), Line(-1), EndLine(-1), FileId(-1)
     { }
 };
@@ -73,11 +73,11 @@ bool ReadJson(char* str, JsonParse& ret)
     ret.FileId = v.get("FileId").get<int64_t>();
     return true;
   }
-    
+
   if(!v.contains("Line") || !v.get("Line").is<int64_t>())
     return false;
   ret.Line = v.get("Line").get<int64_t>();
-      
+
   if(ret.Type == IntoFun || ret.Type == OutFun)
   {
     if(!v.contains("Fun") || !v.get("Fun").is<std::string>())
@@ -87,17 +87,17 @@ bool ReadJson(char* str, JsonParse& ret)
     if(!v.contains("EndLine") || !v.get("EndLine").is<int64_t>())
       return false;
     ret.EndLine = v.get("EndLine").get<int64_t>();
-    
+
     if(!v.contains("File") || !v.get("File").is<std::string>())
       return false;
     ret.File = v.get("File").get<std::string>();
     return true;
   }
-  
+
   if(!v.contains("FileId") || !v.get("FileId").is<int64_t>())
     return false;
   ret.FileId = v.get("FileId").get<int64_t>();
- 
+
   ret.Ticks = 0;
 
   // this one is optional
@@ -115,7 +115,7 @@ struct FullFunction
   std::string filename;
   int line;
   int endline;
-  
+
   FullFunction() {}
   FullFunction(const std::string& _name, const std::string _file, int _line, int _endline)
     : name(_name), filename(_file), line(_line), endline(_endline)
@@ -163,15 +163,15 @@ struct StackTrace
     int calls;
     std::map<FullFunction, StackTrace>* children;
     StackTrace* parent;
-    
+
     StackTrace() : runtime(0), calls(0),
     children(NULL), parent(NULL)
     { }
-    
+
     StackTrace(StackTrace* p) : runtime(0), calls(0),
     children(NULL), parent(p)
     { }
-    
+
     void setupChildren()
     {
       if(!children)
@@ -219,7 +219,7 @@ struct TimeStash
   Int runtime;
   Int runtime_with_children;
   Int total_ticks;
-  
+
   TimeStash(Int _l, Int _cl, Int _tt) :
   runtime(_l), runtime_with_children(_cl),
   total_ticks(_tt) { }
@@ -232,17 +232,17 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     bool firstExec = true;
 
     std::map<Int, std::string> filename_map;
-    
+
     std::map<Int, std::set<Int> > read_lines;
     std::map<Int, std::map<Int, Int> > exec_lines;
     std::map<Int, std::map<Int, Int> > runtime_lines;
     std::map<Int, std::map<Int, Int> > runtime_with_children_lines;
-    
+
     std::map<Int, std::map<Int, std::set<FullFunction> > > called_functions;
     StackTrace stacktrace;
     stacktrace.setupChildren();
     StackTrace* current_stack = &stacktrace;
-    
+
     // prev_exec is the last function executed, calling_exec is the statement which
     // we would currently say called a function. The only time when there differ
     // is immediately after returning from a function.
@@ -260,13 +260,13 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 
     while(true)
     {
-      Obj gapstr = GAP_callFunction(readline, stream); 
+      Obj gapstr = GAP_callFunction(readline, stream);
       if(!IS_STRING(gapstr) || !IS_STRING_REP(gapstr))
         return Fail;
       char* str = (char*)CHARS_STRING(gapstr);
       if(*str == 0)
         break;
-       
+
       JsonParse ret;
       if(ReadJson(str, ret))
       {
@@ -309,16 +309,16 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
                 runtime_with_children_lines[calling_exec.FileId][calling_exec.Line] =
                   ts.runtime_with_children + (total_ticks - ts.total_ticks) -
                     (runtime_lines[calling_exec.FileId][calling_exec.Line] - ts.runtime);
-                
+
                 line_stack.pop_back();
                 line_times_stack.pop_back();
             }
           }
           break;
-          
+
           case Read:
           case Exec:
-          
+
           if(ret.Type == Read)
           {
             read_lines[ret.FileId].insert(ret.Line);
@@ -338,7 +338,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
               total_ticks += ret.Ticks;
             }
           }
-          
+
           case Info:; // ignored
         }
       }
@@ -350,27 +350,27 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
           return Fail;
         }
       }
-        
+
 
       if(ret.Type == Exec) { prev_exec = ret; calling_exec = ret; }
       if(ret.Type == Info) { calling_exec = ret; }
     }
-    
+
 
     // Now lets build a bunch of stuff which GAP will want back.
     // This stores the read, exec and runtime data.
     // vector of [filename, [ [read,exec,runtime] of line 1, [read,exec,runtime] of line 2, ... ] ]
-    
+
     std::vector<std::pair<std::string, std::vector<std::vector<Int> > > > read_exec_data;
-    
+
     std::vector<std::pair<std::string, std::vector<std::set<FullFunction> > > > called_functions_ret;
-    
+
     // First gather all used filenames
     std::set<Int> filenameids;
 
     for(std::map<Int, std::set<Int> >::iterator it = read_lines.begin(); it != read_lines.end(); ++it)
       filenameids.insert(it->first);
-    
+
     for(std::map<Int, std::map<Int,Int> >::iterator it = exec_lines.begin(); it != exec_lines.end(); ++it)
       filenameids.insert(it->first);
 
@@ -380,7 +380,7 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
     // Now we have all our filenames!
     // clear out a marker we use for start of file
     filenameids.erase(-1);
-    
+
     for(std::set<Int>::iterator it = filenameids.begin(); it != filenameids.end(); ++it)
     {
       const std::set<Int>& read_set = read_lines[*it];
@@ -402,10 +402,10 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 
       if(!runtime_with_children_lines.empty())
         max_line = std::max(max_line, runtime_with_children_lines.rbegin()->first);
-      
+
       if(!called_functions.empty())
         max_line = std::max(max_line, called_functions.rbegin()->first);
-        
+
       std::vector<std::vector<Int> > line_data;
       std::vector<std::set<FullFunction> > called_data;
       for(int i = 1; i <= max_line; ++i)
@@ -415,8 +415,8 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
         data.push_back(exec_set[i]);
         data.push_back(runtime[i]);
         data.push_back(runtime_children[i]);
-        line_data.push_back(data); 
-        
+        line_data.push_back(data);
+
         called_data.push_back(functions[i]);
       }
 

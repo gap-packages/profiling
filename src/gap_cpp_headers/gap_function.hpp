@@ -11,13 +11,13 @@ class GAPFunction
 public:
     GAPFunction() : obj(0), name()
     { }
-    
+
     GAPFunction(std::string s) : obj(0), name(s)
     { }
 
     void setName(std::string s)
     { name = s; }
-    
+
     Obj getObj()
     {
         if(obj == 0)

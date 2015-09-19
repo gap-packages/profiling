@@ -14,7 +14,7 @@ class optional
     void random_function_name() const {}
 public:
     operator bool_type() const
-    { 
+    {
         bool_type tr = &optional::random_function_name;
         bool_type f(0);
         return present ? tr : f;

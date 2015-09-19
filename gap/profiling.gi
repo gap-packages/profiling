@@ -12,7 +12,7 @@ function(filename)
   f := IO_CompressedFile(filename, "r");
   res := READ_PROFILE_FROM_STREAM(f, 0);
   IO_Close(f);
-  return res; 
+  return res;
 end );
 
 # This internal function just pretty prints a function object
@@ -58,14 +58,14 @@ end);
 
 ##
 InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, outdir)
-    local infile, outname, instream, outstream, line, allLines, 
+    local infile, outname, instream, outstream, line, allLines,
           counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml, LookupWithDefault,
           warnedExecNotRead, outputCSS, filebuf;
-    
+
     warnedExecNotRead := false;
-    
+
     LookupWithDefault := function(dict, val, default)
         local v;
         v := LookupDictionary(dict, val);
@@ -75,9 +75,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
             return v;
         fi;
     end;
-    
+
     outputCSS := function(outstream);
-    PrintTo(outstream, 
+    PrintTo(outstream,
         "<style>\n",
 "table { border-collapse: collapse }\n",
 "tr .linenum { text-align: right; }\n",
@@ -102,7 +102,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
 "    color: #ffffff;\n",
 "}\n",
 "table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after {\n",
-"    content: \" \\25B4\\25BE\"\n", 
+"    content: \" \\25B4\\25BE\"\n",
 "}\n",
 "</style>");
     end;
@@ -113,7 +113,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
       outputCSS(outstream);
 
       PrintTo(outstream, "<table class=\"sortable\">\n");
-      PrintTo(outstream, "<tr><th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><tr>\n");      
+      PrintTo(outstream, "<tr><th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><tr>\n");
       for i in [1..Length(lines)] do
         if not(IsBound(coverage[i])) or (coverage[i] = [0,0,0,0]) then
           outchar := "ignore";
@@ -124,7 +124,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         else
           Error("Invalid profile - there were lines which were not executed, but took time!");
         fi;
-        
+
         str := List(lines[i]);
         str := ReplacedString(str, "&", "&amp;");
         str := ReplacedString(str, "<", "&lt;");
@@ -152,22 +152,22 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
             Append(calledfns, Concatenation("<a href=\"",linkname,"#line",String(fn.line),"\">",name,"</a> "));
           od;
         fi;
-        
+
         PrintTo(outstream, "<td><a name=\"line",i,"\"></a><div class='linenum ",outchar,"'>",i,"</div></td>");
         PrintTo(outstream, time);
         PrintTo(outstream, "<td><span><tt>",str,"</tt></span></td>");
         PrintTo(outstream, "<td><span>",calledfns,"</span></td>");
         PrintTo(outstream, "</tr>");
       od;
-            
+
       PrintTo(outstream,"</table></body></html>");
     end;
-    
+
     outputoverviewhtml := function(overview, outdir)
       local filename, outstream, codecover, i;
-      
+
       Sort(overview, function(v,w) return v.inname < w.inname; end);
-      
+
       filename := Concatenation(outdir, "/index.html");
       outstream := OutputTextFile(filename, false);
       SetPrintFormattingStatus(outstream, false);
@@ -176,7 +176,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
         "<tr><th>File</th><th>Coverage%</th><th>Coverage Lines</th><th>Time</th><th>Statements</th></tr>\n"
         );
-      
+
       for i in overview do
         PrintTo(outstream, "<tr>");
         PrintTo(outstream, "<td><a href='",
@@ -191,11 +191,11 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         PrintTo(outstream, "<td>",i.filetime, "</td><td>",i.fileexec,"</td>");
         PrintTo(outstream, "</tr>");
       od;
-      
+
       PrintTo(outstream,"</table></body></html>");
       CloseStream(outstream);
     end;
-   
+
     overview := [];
     for filenum in [1..Length(data.line_info)] do
         fileinfo := data.line_info[filenum];
@@ -216,9 +216,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
               line := ReadLine(instream);
             od;
             CloseStream(instream);
-            
+
             # Check for lines which are executed, but not read
-            
+
             if ForAny(fileinfo[2], x -> (x[1] = 0 and x[2] > 0) and not warnedExecNotRead) then
               Print("Warning: There are statements in ", fileinfo[1],"\n",
                     "which are marked executed but not marked as read. Your profile may not\n",
@@ -239,13 +239,13 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
 
             CloseStream(outstream);
         fi;
-    od;   
+    od;
 
     filebuf := ReadAll(InputTextFile(Filename(DirectoriesPackageLibrary( "profiling", "data"), "sorttable.js")));
     outstream := OutputTextFile(Concatenation(outdir, "/sorttable.js"), false);
     SetPrintFormattingStatus(outstream, false);
     PrintTo(outstream, filebuf);
-    CloseStream(outstream); 
+    CloseStream(outstream);
 
     # Output an overview page
     outputoverviewhtml(overview, outdir);

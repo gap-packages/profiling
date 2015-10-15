@@ -10,6 +10,9 @@ function(filename)
     Info(InfoWarning, 1, "Reading Profile while still generating it!");
   fi;
   f := IO_CompressedFile(filename, "r");
+  if f = fail then
+    ErrorMayQuit("Unable to open file ", filename);
+  fi;
   res := READ_PROFILE_FROM_STREAM(f, 0);
   IO_Close(f);
   return res;
@@ -39,6 +42,9 @@ end;
 InstallGlobalFunction("OutputFlameGraph",function(data, filename)
   local outstream, trace, fun, firstpass;
   outstream := OutputTextFile(filename, false);
+  if outstream = fail then
+    ErrorMayQuit("Unable to write to file ", outstream);
+  fi;
   SetPrintFormattingStatus(outstream, false);
   for trace in data.stack_runtimes do
     firstpass := true;
@@ -65,6 +71,11 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
           warnedExecNotRead, outputCSS, filebuf;
 
     warnedExecNotRead := false;
+    
+    # Don't bother warning about missing 'read' lines if we are just profiling
+    if data.info.is_cover = false then
+      warnedExecNotRead := true;
+    fi;
 
     LookupWithDefault := function(dict, val, default)
         local v;
@@ -81,17 +92,15 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         "<style>\n",
 "table { border-collapse: collapse }\n",
 "tr .linenum { text-align: right; }\n",
-"tr .exec { background-color: #2EFE2E; }\n",
-"tr .missed { background-color: #FE2E64; }\n",
+"tr:nth-child(odd)  { background-color: #EEE; }\n",
+"tr:nth-child(even)  { background-color: #FFF; }\n",
+"tr:nth-child(odd).exec  { background-color: #0F0; }\n",
+"tr:nth-child(even).exec  { background-color: #3F3; }\n",
+"tr:nth-child(odd).missed  { background-color: #F00; }\n",
+"tr:nth-child(even).missed  { background-color: #F33; }\n",
 "td, th {\n",
 "    border: 1px solid #98bf21;\n",
 "    padding: 3px 7px 2px 7px;\n",
-"}\n",
-"tr:nth-child(even) {\n",
-"    background-color: #FFF;\n",
-"}\n",
-"tr:nth-child(odd) {\n",
-"    background-color: #EFE;\n",
 "}\n",
 "th {\n",
 "    font-size: 1.1em;\n",
@@ -129,12 +138,15 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         str := ReplacedString(str, "&", "&amp;");
         str := ReplacedString(str, "<", "&lt;");
         str := ReplacedString(str, " ", "&nbsp;");
-        PrintTo(outstream, "<tr>");
+        PrintTo(outstream, "<tr class='", outchar,"'>");
         time := "<td></td><td></td><td></td>";
         if IsBound(coverage[i]) and coverage[i][2] >= 1 then
           calls := String(coverage[i][2]) ;
+          if data.info.is_cover and calls > 1 then
+            calls := 0;
+          fi;
           if coverage[i][3] >= 1 or coverage[i][4] >= 1 then
-            time := Concatenation("<td>",calls, "</td><td>",String(coverage[i][3]),"</td><td>", String(coverage[i][4]), "</td>");
+            time := Concatenation("<td>",calls, "</td><td>",String(coverage[i][3]),"</td><td>", String(coverage[i][4]+coverage[i][3]), "</td>");
           else
             time := Concatenation("<td>",calls,"</td><td></td><td></td>");
           fi;
@@ -147,17 +159,17 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
             Append(linkname, ".html");
             name := fn.name;
             if name = "nameless" then
-              name := Concatenation(fn.filename, String(fn.line));
+              name := Concatenation(fn.filename, ":", String(fn.line));
             fi;
             Append(calledfns, Concatenation("<a href=\"",linkname,"#line",String(fn.line),"\">",name,"</a> "));
           od;
         fi;
 
-        PrintTo(outstream, "<td><a name=\"line",i,"\"></a><div class='linenum ",outchar,"'>",i,"</div></td>");
+        PrintTo(outstream, "<td><a name=\"line",i,"\"></a><div class='linenum'>",i,"</div></td>");
         PrintTo(outstream, time);
         PrintTo(outstream, "<td><span><tt>",str,"</tt></span></td>");
         PrintTo(outstream, "<td><span>",calledfns,"</span></td>");
-        PrintTo(outstream, "</tr>");
+        PrintTo(outstream, "</tr>\n");
       od;
 
       PrintTo(outstream,"</table></body></html>");
@@ -250,4 +262,3 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
     # Output an overview page
     outputoverviewhtml(overview, outdir);
 end);
-

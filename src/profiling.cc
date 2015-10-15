@@ -27,7 +27,7 @@ ProfType StringToProf(const std::string& s)
   if(s[0] == 'I') return IntoFun;
   if(s[0] == 'O') return OutFun;
   if(s[0] == 'S') return StringId;
-  if(s[0] == 'X') return Info;
+  if(s[0] == '_') return Info;
   throw GAPException("Invalid Type in profile");
 }
 
@@ -41,7 +41,10 @@ struct JsonParse
   std::string File;
   int FileId;
 
-  JsonParse() : Type(InvalidType), Ticks(-1), Line(-1), EndLine(-1), FileId(-1)
+  bool IsCover;
+  std::string TimeType;
+  JsonParse() : Type(InvalidType), Ticks(-1), Line(-1), EndLine(-1), FileId(-1),
+                IsCover(false)
     { }
 };
 
@@ -61,6 +64,32 @@ bool ReadJson(char* str, JsonParse& ret)
     return false;
 //Pr("3",0,0);
   ret.Type = StringToProf(v.get("Type").get<std::string>());
+
+  if(ret.Type == Info)
+  {
+      if(!v.contains("Version") || !v.get("Version").is<int64_t>()) {
+        ErrorMayQuit("Do not understand version of file format "
+                     "(no Version in the Info line)", 0, 0);
+      }
+      Int version = v.get("Version").get<int64_t>();
+      if(version > 1) {
+        ErrorMayQuit("This version of the 'profiling' package is too old "
+                     "to read this file (only accepts version 1, this file"
+                     " is version %d)", version, 0);
+      } 
+                     
+      if(!v.contains("IsCover") || !v.get("IsCover").is<bool>()) {
+        return false;
+      }
+      ret.IsCover = v.get("IsCover").get<bool>();
+
+      if(!v.contains("TimeType") || !v.get("TimeType").is<std::string>()) {
+        return false;
+      }
+
+      ret.TimeType = v.get("TimeType").get<std::string>();
+      return true;
+  }
 
   if(ret.Type == StringId)
   {
@@ -228,6 +257,8 @@ struct TimeStash
 Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 {
     GAPFunction readline("IO_ReadLine");
+    bool isCover = false;
+    std::string timeType;
     int failedparse = 0;
     bool firstExec = true;
 
@@ -339,8 +370,11 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
               total_ticks += ret.Ticks;
             }
           }
-
-          case Info:; // ignored
+          break;
+          case Info:
+            isCover = ret.IsCover;
+            timeType = ret.TimeType;
+          break;
         }
       }
       else
@@ -434,11 +468,16 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 
     std::vector<std::pair<std::vector<FullFunction>, Int> > function_stack_runtimes = dumpRuntimes(&stacktrace);
 
+    GAPRecord info;
+    info.set("is_cover", isCover);
+    info.set("time_type", timeType);
+    
     GAPRecord r;
 
     r.set("line_info", read_exec_data);
     r.set("stack_runtimes", function_stack_runtimes);
     r.set("line_function_calls", called_functions_ret);
+    r.set("info", info);
 
     return GAP_make(r);
 }

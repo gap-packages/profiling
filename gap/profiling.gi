@@ -141,14 +141,17 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, o
         PrintTo(outstream, "<tr class='", outchar,"'>");
         time := "<td></td><td></td><td></td>";
         if IsBound(coverage[i]) and coverage[i][2] >= 1 then
-          calls := String(coverage[i][2]) ;
+          calls := coverage[i][2];
           if data.info.is_cover and calls > 1 then
             calls := 0;
           fi;
+
           if coverage[i][3] >= 1 or coverage[i][4] >= 1 then
-            time := Concatenation("<td>",calls, "</td><td>",String(coverage[i][3]),"</td><td>", String(coverage[i][4]+coverage[i][3]), "</td>");
+            time := Concatenation("<td>",String(calls), "</td><td>",
+                                  String(coverage[i][3]),"</td><td>",
+                                  String(coverage[i][4]+coverage[i][3]), "</td>");
           else
-            time := Concatenation("<td>",calls,"</td><td></td><td></td>");
+            time := Concatenation("<td>",String(calls),"</td><td></td><td></td>");
           fi;
         fi;
         # totaltime := LookupWithDefault(linedict.recursetime, i, "");

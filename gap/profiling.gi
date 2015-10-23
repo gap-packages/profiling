@@ -63,15 +63,44 @@ end);
 
 
 ##
-InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(data, indir, outdir)
-    local infile, outname, instream, outstream, line, allLines,
+InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
+    local data, indir, outdir,
+          infile, outname, instream, outstream, line, allLines,
           counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml, LookupWithDefault,
           warnedExecNotRead, outputCSS, filebuf;
 
+    if Length(arg) < 2 or Length(arg) > 3 then
+      ErrorMayQuit("Usage: OutputAnnotatedCodeCoverageFiles(data, [indir,] outdir)");
+    fi;
+
+    data := arg[1];
+    if Length(arg) = 2 then
+      indir := "/";
+      outdir := arg[2];
+    else
+      indir := arg[2];
+      outdir := arg[3];
+    fi;
+
+    # Try to make directory (might already exist)
+    IO_mkdir(outdir, IO.S_IRUSR+IO.S_IWUSR+IO.S_IXUSR+
+                                IO.S_IRGRP+IO.S_IXGRP+
+                                IO.S_IROTH+IO.S_IXOTH);
+
+    if not(IO_opendir(outdir)) then
+      ErrorMayQuit("Unable to access directory ", outdir);
+    fi;
+
+    IO_closedir();
+
+    if not(IsRecord(data)) then
+      data := ReadLineByLineProfile(data);
+    fi;
+
     warnedExecNotRead := false;
-    
+
     # Don't bother warning about missing 'read' lines if we are just profiling
     if data.info.is_cover = false then
       warnedExecNotRead := true;

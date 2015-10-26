@@ -1,4 +1,4 @@
-gap> START_TEST("test_basic.tst");
+gap> START_TEST("colour.tst");
 gap> LoadPackage("profiling", false);
 true
 gap> f := function(x) local w; if x < 0 then w := 3; else w := 4; fi; end;
@@ -71,4 +71,4 @@ function ( x )
     fi;
     return;
 end
-gap> STOP_TEST("test_basic.tst", 1);
+gap> STOP_TEST("colour.tst", 1);

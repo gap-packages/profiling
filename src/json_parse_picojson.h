@@ -17,7 +17,7 @@ bool ReadJson(char* str, JsonParse& ret)
   if(!v.contains("Type") || !v.get("Type").is<std::string>())
     return false;
 //Pr("3",0,0);
-  ret.Type = StringToProf(v.get("Type").get<std::string>());
+  ret.Type = CharToProf(v.get("Type").get<std::string>()[0]);
 
   if(ret.Type == Info)
   {

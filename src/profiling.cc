@@ -18,14 +18,14 @@ Obj TestCommand(Obj self)
 
 enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4, StringId = 5, Info = 6, InvalidType = -1};
 
-ProfType StringToProf(const std::string& s)
+ProfType CharToProf(char c)
 {
-  if(s[0] == 'R') return Read;
-  if(s[0] == 'E') return Exec;
-  if(s[0] == 'I') return IntoFun;
-  if(s[0] == 'O') return OutFun;
-  if(s[0] == 'S') return StringId;
-  if(s[0] == '_') return Info;
+  if(c == 'R') return Read;
+  if(c == 'E') return Exec;
+  if(c == 'I') return IntoFun;
+  if(c == 'O') return OutFun;
+  if(c == 'S') return StringId;
+  if(c == '_') return Info;
   throw GAPException("Invalid Type in profile");
 }
 
@@ -46,7 +46,7 @@ struct JsonParse
     { }
 };
 
-#include "json_parse_picojson.h"
+#include "json_parse_rapidjson.h"
 
 
 struct FullFunction
@@ -165,9 +165,49 @@ struct TimeStash
   total_ticks(_tt) { }
 };
 
-Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
+static int endsWithgz(char* s)
 {
-    GAPFunction readline("IO_ReadLine");
+  s = strrchr(s, '.');
+  if(s)
+    return strcmp(s, ".gz") == 0;
+  else
+    return 0;
+}
+
+struct Stream {
+  FILE* stream;
+  bool wasPopened;
+  Stream(char* name) {
+    char popen_buf[4096];
+    if(endsWithgz(name) && strlen(name) < 3000)
+    {
+      strcpy(popen_buf, "gzip -d -c < ");
+      strcat(popen_buf, name);
+      stream = popen(popen_buf, "r");
+      wasPopened = true;
+    }
+    else
+    {
+      stream = fopen(name, "r");
+      wasPopened = false;
+    }   
+  }
+  
+  bool fail()
+  { return stream == 0; }
+  
+  ~Stream() {
+      if(wasPopened)
+        pclose(stream);
+      else
+        fclose(stream);
+    }
+};
+
+
+
+Obj READ_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
+{
     bool isCover = false;
     std::string timeType;
     int failedparse = 0;
@@ -200,15 +240,27 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj stream, Obj param2)
 
     long long total_ticks = 0;
 
+    Stream infile(CSTR_STRING(filename));
+    if(infile.fail()) {
+      ErrorMayQuit("Unable to open file %s", (Int)filename, 0);
+      return Fail;
+    }
+
     while(true)
     {
-      Obj gapstr = GAP_callFunction(readline, stream);
-      if(!IS_STRING(gapstr) || !IS_STRING_REP(gapstr))
-        return Fail;
-      char* str = (char*)CHARS_STRING(gapstr);
-      if(*str == 0)
+      if(feof(infile.stream)) {
         break;
-
+      }
+      char str[10000];
+      if(fgets(str, 10000, infile.stream) == 0)
+      {
+        if(feof(infile.stream)) {
+          break;
+        }
+        else {
+          return Fail;
+        }
+      }
       JsonParse ret;
       if(ReadJson(str, ret))
       {

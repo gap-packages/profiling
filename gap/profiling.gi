@@ -5,16 +5,11 @@
 #
 InstallGlobalFunction( "ReadLineByLineProfile",
 function(filename)
-  local f, res;
+  local res;
   if IsLineByLineProfileActive() then
     Info(InfoWarning, 1, "Reading Profile while still generating it!");
   fi;
-  f := IO_CompressedFile(filename, "r");
-  if f = fail then
-    ErrorMayQuit("Unable to open file ", filename);
-  fi;
-  res := READ_PROFILE_FROM_STREAM(f, 0);
-  IO_Close(f);
+  res := READ_PROFILE_FROM_STREAM(filename, 0);
   return res;
 end );
 

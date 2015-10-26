@@ -5,7 +5,7 @@
 # metadata in PackageInfo.g.
 #
 LoadPackage( "profiling" );
-dirs := DirectoriesPackageLibrary( "profiling", "tst" );
+dirs := DirectoriesPackageLibrary( "profiling", "tst" )[1]![1];
 
 TestDirectory(dirs, rec(exitGAP := true));
 

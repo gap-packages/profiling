@@ -77,7 +77,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
     data := arg[1];
     if Length(arg) = 2 then
-      indir := "/";
+      indir := "";
       outdir := arg[2];
     else
       indir := arg[2];

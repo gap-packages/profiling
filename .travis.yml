@@ -1,0 +1,30 @@
+language: cpp
+sudo: false
+
+branches:
+  except:
+    - gh-pages
+
+addons:
+  apt_packages:
+      - libgmp3-dev
+
+
+
+
+install:
+  - git clone --depth=2 https://github.com/gap-system/gap.git gapsrc
+  - pwd
+  - ( cd gapsrc && ./configure --with-gmp=system && make && make bootstrap-pkg-minimal)
+  - ( cd gapsrc/pkg && git clone --depth=2 https://github.com/gap-packages/io && cd io && ./autogen.sh && ./configure && make )
+  - pwd
+  - ( ./autogen.sh && ./configure --with-gaproot=gapsrc && make )
+  - pwd
+  - ls
+  - ls gapsrc
+  - ls gapsrc/pkg
+  - echo ln -s $(pwd) gapsrc/pkg/profile
+  - ln -s $(pwd) gapsrc/pkg/profile
+
+script:
+  - gapsrc/bin/gap.sh tst/testall.g

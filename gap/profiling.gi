@@ -9,7 +9,7 @@ function(filename)
   if IsLineByLineProfileActive() then
     Info(InfoWarning, 1, "Reading Profile while still generating it!");
   fi;
-  res := READ_PROFILE_FROM_STREAM(filename, 0);
+  res := READ_PROFILE_FROM_STREAM(USER_HOME_EXPAND(filename), 0);
   return res;
 end );
 
@@ -79,12 +79,23 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       outdir := arg[3];
     fi;
 
+    if IsDirectory(indir) then
+      indir := indir![1];
+    fi;
+
+    if IsDirectory(outdir) then
+      outdir := outdir![1];
+    fi;
+
+    indir := USER_HOME_EXPAND(indir);
+    outdir := USER_HOME_EXPAND(outdir);
+
     # Try to make directory (might already exist)
     IO_mkdir(outdir, IO.S_IRUSR+IO.S_IWUSR+IO.S_IXUSR+
                                 IO.S_IRGRP+IO.S_IXGRP+
                                 IO.S_IROTH+IO.S_IXOTH);
 
-    if not(IO_opendir(outdir)) then
+    if IO_opendir(outdir) = fail then
       ErrorMayQuit("Unable to access directory ", outdir);
     fi;
 
@@ -242,19 +253,30 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         infile := fileinfo[1];
         if Length(indir) <= Length(infile)
                 and indir = infile{[1..Length(indir)]} then
-            outname := ReplacedString(infile, "/", "_");
+            # Make a nicer output filename, handling the input being in
+            # directories, or having *s in the name.
+            outname := infile;
+            outname := ReplacedString(outname, "/", "_");
+            outname := ReplacedString(outname, "*", "_");
             outname := Concatenation(outdir, "/", outname);
             outname := Concatenation(outname, ".html");
-            instream := InputTextFile(infile);
             outstream := OutputTextFile(outname, false);
             SetPrintFormattingStatus(outstream, false);
-            allLines := [];
-            line := ReadLine(instream);
-            while line <> fail do
-              Add(allLines, line);
+
+            # Check file exists. This also handles us accidentally trying
+            # to open files like *stdin*
+            if IsExistingFile(infile) then
+              instream := InputTextFile(infile);
+              allLines := [];
               line := ReadLine(instream);
-            od;
-            CloseStream(instream);
+              while line <> fail do
+                Add(allLines, line);
+                line := ReadLine(instream);
+              od;
+              CloseStream(instream);
+            else
+              allLines := List([1..Length(fileinfo[2])], x -> "<missing file>");
+            fi;
 
             # Check for lines which are executed, but not read
 

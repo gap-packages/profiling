@@ -41,7 +41,7 @@ struct JsonParse
 
   bool IsCover;
   std::string TimeType;
-  JsonParse() : Type(InvalidType), Ticks(-1), Line(-1), EndLine(-1), FileId(-1),
+  JsonParse() : Type(InvalidType), Ticks(0), Line(-1), EndLine(-1), FileId(-1),
                 IsCover(false)
     { }
 };
@@ -326,11 +326,13 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
             else
             {
               // The ticks are since the last executed line
-              runtime_lines[prev_exec.FileId][prev_exec.Line]+=ret.Ticks;
-              // Hard to know exactly where to charge these to --
-              // this is easiest
-              (current_stack->runtime) += ret.Ticks;
-              total_ticks += ret.Ticks;
+              if(ret.Ticks > 0) {
+                runtime_lines[prev_exec.FileId][prev_exec.Line]+=ret.Ticks;
+                // Hard to know exactly where to charge these to --
+                // this is easiest
+                (current_stack->runtime) += ret.Ticks;
+                total_ticks += ret.Ticks;
+              }
             }
           }
           break;

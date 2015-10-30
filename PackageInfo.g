@@ -1,101 +1,85 @@
-#############################################################################
-##  
-##  Demo PackageInfo.g for the GitHubPagesForGAP
-##
-
+#
+# profiling: Line by line profiling and code coverage for GAP
+#
+# This file contains package meta data. For additional information on
+# the meaning and correct usage of these fields, please consult the
+# manual of the "Example" package as well as the comments in its
+# PackageInfo.g file.
+#
 SetPackageInfo( rec(
 
-PackageName := "GitHubPagesForGAP",
-
-Subtitle := "A GitHubPages generator for GAP packages",
+PackageName := "profiling",
+Subtitle := "Line by line profiling and code coverage for GAP",
 Version := "0.1",
-Date := "21/03/2014", # dd/mm/yyyy format
+Date := "03/03/2015", # dd/mm/yyyy format
 
 Persons := [
   rec(
-    LastName      := "Horn",
-    FirstNames    := "Max",
-    IsAuthor      := true,
-    IsMaintainer  := true,
-    Email         := "max.horn@math.uni-giessen.de",
-    WWWHome       := "http://www.quendi.de/math",
+    IsAuthor := true,
+    IsMaintainer := true,
+    FirstNames := "Christopher",
+    LastName := "Jefferson",
+    WWWHome := "http://caj.host.cs.st-andrews.ac.uk/",
+    Email := "caj21@st-andrews.ac.uk",
     PostalAddress := Concatenation(
-                       "AG Algebra\n",
-                       "Mathematisches Institut\n",
-                       "Justus-Liebig-Universit‰t Gieﬂen\n",
-                       "Arndtstraﬂe 2\n",
-                       "35392 Gieﬂen\n",
-                       "Germany" ),
-    Place         := "Gieﬂen",
-    Institution   := "Justus-Liebig-Universit‰t Gieﬂen"
-  ),
-
-  rec(
-    LastName      := "Thor",
-    FirstNames    := "A. U.",
-    IsAuthor      := true,
-    IsMaintainer  := false,
-    #Email         := "author@example.com",
-  ),
-
-  rec(
-    LastName      := "Itor",
-    FirstNames    := "Jan",
-    IsAuthor      := false,
-    IsMaintainer  := true,
-    #Email         := "janitor@example.com",
+               "St Andrews\n",
+               "Scotland\n",
+               "UK" ),
+    Place := "St Andrews",
+    Institution := "University of St Andrews",
   ),
 ],
 
-Status := "other",
+PackageWWWHome := "http://ChrisJefferson.github.io/profiling/",
 
-# The following are not strictly necessary in your own PackageInfo.g
-# (in the sense that update.g only looks at the usual fields
-# like PackageWWWHome, ArchiveURL etc.). But they are convenient
-# if you use exactly the scheme for your package website that we propose.
-GithubUser := "fingolfin",
-GithubRepository := ~.PackageName,
-GithubWWW := Concatenation("https://github.com/", ~.GithubUser, "/", ~.GithubRepository),
-
-PackageWWWHome := Concatenation("http://", ~.GithubUser, ".github.io/", ~.GithubRepository, "/"),
+ArchiveURL     := Concatenation("https://github.com/ChrisJefferson/profiling/",
+                                "releases/download/v", ~.Version,
+                                "/profiling-", ~.Version),
 README_URL     := Concatenation( ~.PackageWWWHome, "README" ),
 PackageInfoURL := Concatenation( ~.PackageWWWHome, "PackageInfo.g" ),
-# The following assumes you are using the Github releases system. If not, adjust
-# it accordingly.
-ArchiveURL     := Concatenation(~.GithubWWW,
-                    "/releases/download/v", ~.Version, "/",
-                    ~.GithubRepository, "-", ~.Version),
 
-ArchiveFormats := ".tar.gz .tar.bz2",
+ArchiveFormats := ".tar.gz",
 
-AbstractHTML := 
-  "This is a pseudo package that contains no actual\
-  <span class=\"pkgname\">GAP</span> code. Instead, it is a template for other\
-  GAP packages that allows to quickly setup GitHub pages.",
+##  Status information. Currently the following cases are recognized:
+##    "accepted"      for successfully refereed packages
+##    "submitted"     for packages submitted for the refereeing
+##    "deposited"     for packages for which the GAP developers agreed
+##                    to distribute them with the core GAP system
+##    "dev"           for development versions of packages
+##    "other"         for all other packages
+##
+Status := "dev",
+
+AbstractHTML   :=  "",
 
 PackageDoc := rec(
-  BookName  := "GitHubPagesForGAP",
+  BookName  := "profiling",
   ArchiveURLSubset := ["doc"],
   HTMLStart := "doc/chap0.html",
   PDFFile   := "doc/manual.pdf",
   SixFile   := "doc/manual.six",
-  LongTitle := "A GitHubPages generator for GAP packages",
+  LongTitle := "Line by line profiling and code coverage for GAP",
 ),
 
-# The following dependencies are fake and for testing / demo purposes
 Dependencies := rec(
-  GAP := ">=4.5.5",
-  NeededOtherPackages := [
-    ["GAPDoc", ">= 1.2"],
-    ["IO", ">= 4.1"],
-  ],
-  SuggestedOtherPackages := [["orb", ">= 4.2"]],
-  ExternalConditions := []
+  GAP := ">= 4.6",
+  NeededOtherPackages := [ [ "GAPDoc", ">= 1.5" ], ["IO", ">= 4.4.4" ] ],
+  SuggestedOtherPackages := [ ],
+  ExternalConditions := [ ],
 ),
 
-AvailabilityTest := ReturnTrue,
+AvailabilityTest := function()
+        local so_exists;
+        so_exists := (Filename(DirectoriesPackagePrograms("profiling"), "profiling.so") <> fail);
+        if not(so_exists) then
+          Info(InfoWarning, 1, "Kernel extension not built for profiling package");
+        fi;
+        return so_exists;
+    end,
 
-Keywords := ["GitHub pages", "GAP"]
+TestFile := "tst/testall.g",
+
+#Keywords := [ "TODO" ],
 
 ));
 

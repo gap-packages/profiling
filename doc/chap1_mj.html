@@ -52,14 +52,24 @@
 <h5>1.1-2 OutputFlameGraph</h5>
 
 <div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; OutputFlameGraph</code>( <var class="Arg">codecover</var>, <var class="Arg">filename</var> )</td><td class="tdright">( function )</td></tr></table></div>
-<p>Generate the input required to draw a 'flame graph', a method of visualising where time is spent by a program. One program for drawing flame graphs using this input can be found at <var class="Arg">codecover</var> should either be a profile previously read by <code class="file">ReadLineByLineProfile</code>, or the filename of a profile. The flame graph input will be written to <var class="Arg">filename</var>.</p>
+<p>Generate the input required to draw a 'flame graph', a method of visualising where time is spent by a program. One program for drawing flame graphs using this output can be found at https://github.com/brendangregg/FlameGraph</p>
+
+<p><var class="Arg">codecover</var> should either be a profile previously read by <code class="file">ReadLineByLineProfile</code>, or the filename of a profile.</p>
+
+<p>The flame graph input will be written to <var class="Arg">filename</var>.</p>
 
 <p><a id="X87AFADF581A7C1FD" name="X87AFADF581A7C1FD"></a></p>
 
 <h5>1.1-3 OutputAnnotatedCodeCoverageFiles</h5>
 
 <div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; OutputAnnotatedCodeCoverageFiles</code>( <var class="Arg">codecover</var>[, <var class="Arg">indir</var>], <var class="Arg">outdir</var> )</td><td class="tdright">( function )</td></tr></table></div>
-<p>Takes a previously generated profile and outputs HTML which shows which lines of code were executed, and (if this was originally recorded) how long was spent executing these lines of code. <var class="Arg">codecover</var> should either be a profile previously read by <code class="file">ReadLineByLineProfile</code>, or the filename of a profile which will first be read with <code class="file">ReadLineByLineProfile</code>. Files will be written to the directory <var class="Arg">outdir</var>. The optional second argument gives a filter, only information about filenames starting with <var class="Arg">indir</var> will be outputted.</p>
+<p>Takes a previously generated profile and outputs HTML which shows which lines of code were executed, and (if this was originally recorded) how long was spent executing these lines of code.</p>
+
+<p><var class="Arg">codecover</var> should either be a profile previously read by <code class="file">ReadLineByLineProfile</code>, or the filename of a profile which will first be read with <code class="file">ReadLineByLineProfile</code>.</p>
+
+<p>Files will be written to the directory <var class="Arg">outdir</var>.</p>
+
+<p>The optional second argument gives a filter, only information about filenames starting with <var class="Arg">indir</var> will be outputted.</p>
 
 
 <div class="chlinkprevnextbot">&nbsp;<a href="chap0_mj.html">[Top of Book]</a>&nbsp;  <a href="chap0_mj.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap0_mj.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chapInd_mj.html">[Next Chapter]</a>&nbsp;  </div>

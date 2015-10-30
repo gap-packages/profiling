@@ -10,8 +10,8 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "0.1",
-Date := "03/03/2015", # dd/mm/yyyy format
+Version := "0.2.0",
+Date := "30/10/2015", # dd/mm/yyyy format
 
 Persons := [
   rec(
@@ -30,9 +30,9 @@ Persons := [
   ),
 ],
 
-PackageWWWHome := "http://ChrisJefferson.github.io/profiling/",
+PackageWWWHome := "https://gap-packages.github.io/profiling/",
 
-ArchiveURL     := Concatenation("https://github.com/ChrisJefferson/profiling/",
+ArchiveURL     := Concatenation("https://github.com/gap-packages/profiling/",
                                 "releases/download/v", ~.Version,
                                 "/profiling-", ~.Version),
 README_URL     := Concatenation( ~.PackageWWWHome, "README" ),
@@ -82,5 +82,3 @@ TestFile := "tst/testall.g",
 #Keywords := [ "TODO" ],
 
 ));
-
-

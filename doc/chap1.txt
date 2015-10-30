@@ -19,9 +19,12 @@
   
   [33X[0;0YGenerate the input required to draw a 'flame graph', a method of visualising
   where time is spent by a program. One program for drawing flame graphs using
-  this  input  can be found at [3Xcodecover[103X should either be a profile previously
-  read by [11XReadLineByLineProfile[111X, or the filename of a profile. The flame graph
-  input will be written to [3Xfilename[103X.[133X
+  this output can be found at https://github.com/brendangregg/FlameGraph[133X
+  
+  [33X[0;0Y[3Xcodecover[103X    should    either    be    a    profile   previously   read   by
+  [11XReadLineByLineProfile[111X, or the filename of a profile.[133X
+  
+  [33X[0;0YThe flame graph input will be written to [3Xfilename[103X.[133X
   
   [1X1.1-3 OutputAnnotatedCodeCoverageFiles[101X
   
@@ -29,10 +32,14 @@
   
   [33X[0;0YTakes  a  previously  generated  profile  and outputs HTML which shows which
   lines  of code were executed, and (if this was originally recorded) how long
-  was  spent  executing  these  lines  of  code.  [3Xcodecover[103X should either be a
-  profile  previously  read  by  [11XReadLineByLineProfile[111X,  or  the filename of a
-  profile  which  will first be read with [11XReadLineByLineProfile[111X. Files will be
-  written  to  the  directory  [3Xoutdir[103X.  The  optional  second argument gives a
-  filter,  only  information  about  filenames  starting  with  [3Xindir[103X  will be
-  outputted.[133X
+  was spent executing these lines of code.[133X
+  
+  [33X[0;0Y[3Xcodecover[103X    should    either    be    a    profile   previously   read   by
+  [11XReadLineByLineProfile[111X, or the filename of a profile which will first be read
+  with [11XReadLineByLineProfile[111X.[133X
+  
+  [33X[0;0YFiles will be written to the directory [3Xoutdir[103X.[133X
+  
+  [33X[0;0YThe  optional  second  argument  gives  a  filter,  only  information  about
+  filenames starting with [3Xindir[103X will be outputted.[133X
   

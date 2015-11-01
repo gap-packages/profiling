@@ -1,3 +1,31 @@
 The GAP 4 package `profiling'
 ==============================
 
+This package provides line-by-line profiling of GAP, allowing
+both discovering which lines of code take the most time, and
+which lines of code are even executed.
+
+The main function provided by this package is
+OutputAnnotatedCodeCoverageFiles, which takes a previously
+generated profile (using ProfileLineByLine or CoverageLineByLine,
+both provided by the GAP library), and outputs human-readable
+HTML files.
+
+There is also OutputFlameGraph, which outputs a graphical diagram
+showing which functions took the most time during exection.
+
+Building
+--------
+
+This package contains C++ code. It should be built using the
+commands:
+
+./configure
+make
+
+Optionally, if this package is not within GAP's pkg directory,
+you can use the following notation to tell configure where GAP
+is located.
+
+./configure --with-gaproot=<location of GAP root>
+make

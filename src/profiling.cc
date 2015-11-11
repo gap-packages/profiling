@@ -448,12 +448,12 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
 }
 
 
-typedef Obj (* GVarFunc)(/*arguments*/);
+typedef Obj (* GVarFuncTypeDef)(/*arguments*/);
 
 #define GVAR_FUNC_TABLE_ENTRY(srcfile, name, nparam, params) \
   {#name, nparam, \
    params, \
-   (GVarFunc)name, \
+   (GVarFuncTypeDef)name, \
    srcfile ":Func" #name }
 
 // Table of functions to export

@@ -40,6 +40,11 @@ InstallGlobalFunction("OutputFlameGraph",function(data, filename)
   if outstream = fail then
     ErrorMayQuit("Unable to write to file ", outstream);
   fi;
+
+  if not(IsRecord(data)) then
+    data := ReadLineByLineProfile(data);
+  fi;
+
   SetPrintFormattingStatus(outstream, false);
   for trace in data.stack_runtimes do
     firstpass := true;

@@ -10,7 +10,7 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "0.2.0",
+Version := "0.3.0",
 Date := "30/10/2015", # dd/mm/yyyy format
 
 Persons := [

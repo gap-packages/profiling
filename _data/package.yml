@@ -1,5 +1,5 @@
 name: profiling
-version: 0.2.0
+version: 0.3.0
 date: 30/10/2015
 description: Line by line profiling and code coverage for GAP
 
@@ -21,13 +21,13 @@ needed-pkgs:
       version: ">= 4.4.4"
       url: "http://gap-system.github.io/io/"
 
-www: https://gap-packages.github.io/profiling/
-readme: https://gap-packages.github.io/profiling/README
-packageinfo: https://gap-packages.github.io/profiling/PackageInfo.g
+www: http://gap-packages.github.io/profiling/
+readme: http://gap-packages.github.io/profiling/README
+packageinfo: http://gap-packages.github.io/profiling/PackageInfo.g
 
 downloads:
     - name: .tar.gz
-      url: https://github.com/gap-packages/profiling/releases/download/v0.2.0/profiling-0.2.0.tar.gz
+      url: https://github.com/gap-packages/profiling/releases/download/v0.3.0/profiling-0.3.0.tar.gz
 
 abstract: 
 

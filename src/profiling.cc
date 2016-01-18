@@ -66,7 +66,7 @@ struct FullFunction
     if(lhs.line < rhs.line) return true;
     if(lhs.line > rhs.line) return false;
     if(lhs.endline < rhs.endline) return true;
-    if(lhs.endline > rhs.endline) return true;
+    if(lhs.endline > rhs.endline) return false;
     if(lhs.name < rhs.name) return true;
     if(lhs.name > rhs.name) return false;
     if(lhs.filename < rhs.filename) return true;

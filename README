@@ -17,8 +17,18 @@ showing which functions took the most time during exection.
 Building
 --------
 
-This package contains C++ code. It should be built using the
-commands:
+Requirements
+------------
+This package requires the 'IO' package is installed and compiled.
+Check it can be loaded by running 'LoadPackage("io");' before trying
+to compile and run 'profiling'.
+
+This package also requires a C++ compiler (typically clang++ or g++)
+
+Instructions
+------------
+
+The package should be built using the commands:
 
 ./configure
 make

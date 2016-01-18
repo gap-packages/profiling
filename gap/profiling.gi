@@ -18,6 +18,7 @@ _Prof_PrettyPrintFunction := function(f)
   return Concatenation(f.name, "@", f.filename, ":", String(f.line));
 end;
 
+
 #############################################################################
 ##
 ##
@@ -62,6 +63,34 @@ InstallGlobalFunction("OutputFlameGraph",function(data, filename)
 end);
 
 
+# The CSS we want to inject into every page
+_prof_CSS :=
+"""<style>
+table { border-collapse: collapse }
+tr .linenum { text-align: right; }
+tr:nth-child(odd)  { background-color: #EEE; }
+tr:nth-child(even)  { background-color: #FFF; }
+tr:nth-child(odd).exec  { background-color: #0F0; }
+tr:nth-child(even).exec  { background-color: #3F3; }
+tr:nth-child(odd).missed  { background-color: #F00; }
+tr:nth-child(even).missed  { background-color: #F33; }
+td, th {
+    border: 1px solid #98bf21;
+    padding: 3px 7px 2px 7px;
+}
+th {
+    font-size: 1.1em;
+    text-align: left;
+    padding-top: 5px;
+    padding-bottom: 4px;
+    background-color: #A7C942;
+    color: #ffffff;
+}
+table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after {
+    content: " \25B4\25BE"
+}
+</style>""";
+
 ##
 InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
     local data, indir, outdir,
@@ -69,7 +98,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml, LookupWithDefault,
-          warnedExecNotRead, outputCSS, filebuf;
+          warnedExecNotRead, filebuf;
 
     if Length(arg) < 2 or Length(arg) > 3 then
       ErrorMayQuit("Usage: OutputAnnotatedCodeCoverageFiles(data, [indir,] outdir)");
@@ -127,39 +156,10 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         fi;
     end;
 
-    outputCSS := function(outstream);
-    PrintTo(outstream,
-        "<style>\n",
-"table { border-collapse: collapse }\n",
-"tr .linenum { text-align: right; }\n",
-"tr:nth-child(odd)  { background-color: #EEE; }\n",
-"tr:nth-child(even)  { background-color: #FFF; }\n",
-"tr:nth-child(odd).exec  { background-color: #0F0; }\n",
-"tr:nth-child(even).exec  { background-color: #3F3; }\n",
-"tr:nth-child(odd).missed  { background-color: #F00; }\n",
-"tr:nth-child(even).missed  { background-color: #F33; }\n",
-"td, th {\n",
-"    border: 1px solid #98bf21;\n",
-"    padding: 3px 7px 2px 7px;\n",
-"}\n",
-"th {\n",
-"    font-size: 1.1em;\n",
-"    text-align: left;\n",
-"    padding-top: 5px;\n",
-"    padding-bottom: 4px;\n",
-"    background-color: #A7C942;\n",
-"    color: #ffffff;\n",
-"}\n",
-"table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after {\n",
-"    content: \" \\25B4\\25BE\"\n",
-"}\n",
-"</style>");
-    end;
-
     outputhtml := function(lines, coverage, subfunctions, outstream)
       local i, outchar, str, time, calls, calledfns, linkname, fn, name, filebuf;
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
-      outputCSS(outstream);
+      PrintTo(outstream, _prof_CSS);
 
       PrintTo(outstream, "<table class=\"sortable\">\n");
       PrintTo(outstream, "<tr><th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><tr>\n");
@@ -227,7 +227,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       outstream := OutputTextFile(filename, false);
       SetPrintFormattingStatus(outstream, false);
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
-      outputCSS(outstream);
+      PrintTo(outstream, _prof_CSS);
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
         "<tr><th>File</th><th>Coverage%</th><th>Coverage Lines</th><th>Time</th><th>Statements</th></tr>\n"
         );

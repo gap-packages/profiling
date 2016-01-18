@@ -17,7 +17,7 @@ DeclareGlobalFunction( "ReadLineByLineProfile" );
 #! @Description
 #!   Generate the input required to draw a 'flame graph', a method of visualising
 #!   where time is spent by a program. One program for drawing flame graphs using
-#!   this output can be found at https://github.com/brendangregg/FlameGraph
+#!   this output can be found at <URL>https://github.com/brendangregg/FlameGraph</URL>
 #!   <P/>
 #!   <A>codecover</A> should either be a profile previously read by
 #!   <F>ReadLineByLineProfile</F>, or the filename of a profile.

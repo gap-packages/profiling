@@ -9,13 +9,6 @@
 #include <algorithm>
 
 
-
-
-Obj TestCommand(Obj self)
-{
-    return INTOBJ_INT(42);
-}
-
 enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4, StringId = 5, Info = 6, InvalidType = -1};
 
 ProfType CharToProf(char c)
@@ -462,7 +455,6 @@ typedef Obj (* GVarFuncTypeDef)(/*arguments*/);
 
 // Table of functions to export
 static StructGVarFunc GVarFuncs [] = {
-    GVAR_FUNC_TABLE_ENTRY("profiling.c", TestCommand, 0, ""),
     GVAR_FUNC_TABLE_ENTRY("profiling.c",READ_PROFILE_FROM_STREAM, 2, "param, param2"),
 
 	{ 0 } /* Finish with an empty entry */

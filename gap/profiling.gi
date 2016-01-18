@@ -101,6 +101,21 @@ table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sor
 }
 </style>""";
 
+# Checks if a file has correct coverage
+_prof_fileHasCoverage := fileinfo -> not ForAny(fileinfo[2], x -> (x[1] = 0 and x[2] > 0));
+
+# Checks if file has any timing attached to it
+_prof_fileHasTiming := fileinfo -> ForAny(fileinfo[2], x -> (x[3] > 0));
+
+_prof_encodeHTML := function(s)
+    local str;
+    str := String(s);
+    str := ReplacedString(str, "&", "&amp;");
+    str := ReplacedString(str, "<", "&lt;");
+    str := ReplacedString(str, " ", "&nbsp;");
+    return str;
+end;
+
 ##
 InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
     local data, indir, outdir,
@@ -108,7 +123,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml,
-          warnedExecNotRead, filebuf;
+          warnedExecNotRead, filebuf, fileview;
 
     if Length(arg) < 2 or Length(arg) > 3 then
       ErrorMayQuit("Usage: OutputAnnotatedCodeCoverageFiles(data, [indir,] outdir)");
@@ -158,14 +173,30 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
 
 
-    outputhtml := function(lines, coverage, subfunctions, outstream)
-      local i, outchar, str, time, calls, calledfns, linkname, fn, name, filebuf;
+    outputhtml := function(lines, fileinfo, subfunctions, outstream)
+      local i, outchar, str, time, calls, calledfns, linkname, fn, name, filebuf, coverage, hasTiming, hasCoverage;
+      hasTiming := _prof_fileHasTiming(fileinfo);
+      hasCoverage := _prof_fileHasCoverage(fileinfo);
+      coverage := fileinfo[2];
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
       PrintTo(outstream, _prof_CSS);
 
+      if not hasCoverage then
+        PrintTo(outstream, "<p>This file was read by GAP before profiling was actived, so lines which were not read but not executed are not marked.</p>");
+      fi;
+
+
       PrintTo(outstream, "<table class=\"sortable\">\n");
-      PrintTo(outstream, "<tr><th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><tr>\n");
+
+      if hasTiming then
+        PrintTo(outstream, "<tr><th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><tr>\n");
+      else
+        PrintTo(outstream, "<tr><th>Line</th><th>Code</th><tr>\n");
+      fi;
+      
       for i in [1..Length(lines)] do
+        str := _prof_encodeHTML(lines[i]);
+
         if not(IsBound(coverage[i])) or (coverage[i] = [0,0,0,0]) then
           outchar := "ignore";
         elif coverage[i][2] >= 1 then
@@ -176,44 +207,46 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           Error("Invalid profile - there were lines which were not executed, but took time!");
         fi;
 
-        str := List(lines[i]);
-        str := ReplacedString(str, "&", "&amp;");
-        str := ReplacedString(str, "<", "&lt;");
-        str := ReplacedString(str, " ", "&nbsp;");
+        # Print start of page
         PrintTo(outstream, "<tr class='", outchar,"'>");
-        time := "<td></td><td></td><td></td>";
-        if IsBound(coverage[i]) and coverage[i][2] >= 1 then
-          calls := coverage[i][2];
-          if data.info.is_cover and calls > 1 then
-            calls := 0;
-          fi;
-
-          if coverage[i][3] >= 1 or coverage[i][4] >= 1 then
-            time := Concatenation("<td>",String(calls), "</td><td>",
-                                  String(coverage[i][3]),"</td><td>",
-                                  String(coverage[i][4]+coverage[i][3]), "</td>");
-          else
-            time := Concatenation("<td>",String(calls),"</td><td></td><td></td>");
-          fi;
-        fi;
-        # totaltime := LookupWithDefault(linedict.recursetime, i, "");
-        calledfns := "";
-        if Length(subfunctions) >= i then
-          for fn in subfunctions[i] do
-            linkname := ReplacedString(fn.filename, "/", "_");
-            Append(linkname, ".html");
-            name := fn.name;
-            if name = "nameless" then
-              name := Concatenation(fn.filename, ":", String(fn.line));
-            fi;
-            Append(calledfns, Concatenation("<a href=\"",linkname,"#line",String(fn.line),"\">",name,"</a> "));
-          od;
-        fi;
-
         PrintTo(outstream, "<td><a name=\"line",i,"\"></a><div class='linenum'>",i,"</div></td>");
-        PrintTo(outstream, time);
+
+        if hasTiming then
+            time := "<td></td><td></td><td></td>";
+            if IsBound(coverage[i]) and coverage[i][2] >= 1 then
+              calls := coverage[i][2];
+              if data.info.is_cover and calls > 1 then
+                calls := 0;
+              fi;
+
+              if coverage[i][3] >= 1 or coverage[i][4] >= 1 then
+                time := Concatenation("<td>",String(calls), "</td><td>",
+                                      String(coverage[i][3]),"</td><td>",
+                                      String(coverage[i][4]+coverage[i][3]), "</td>");
+              else
+                time := Concatenation("<td>",String(calls),"</td><td></td><td></td>");
+              fi;
+            fi;
+            # totaltime := LookupWithDefault(linedict.recursetime, i, "");
+            calledfns := "";
+            if Length(subfunctions) >= i then
+              for fn in subfunctions[i] do
+                linkname := ReplacedString(fn.filename, "/", "_");
+                Append(linkname, ".html");
+                name := fn.name;
+                if name = "nameless" then
+                  name := Concatenation(fn.filename, ":", String(fn.line));
+                fi;
+                Append(calledfns, Concatenation("<a href=\"",linkname,"#line",String(fn.line),"\">",name,"</a> "));
+              od;
+            fi;
+
+            PrintTo(outstream, time);
+        fi;
         PrintTo(outstream, "<td><span><tt>",str,"</tt></span></td>");
-        PrintTo(outstream, "<td><span>",calledfns,"</span></td>");
+        if hasTiming then
+            PrintTo(outstream, "<td><span>",calledfns,"</span></td>");
+        fi;
         PrintTo(outstream, "</tr>\n");
       od;
 
@@ -231,7 +264,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
       PrintTo(outstream, _prof_CSS);
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
-        "<tr><th>File</th><th>Coverage%</th><th>Coverage Lines</th><th>Time</th><th>Statements</th></tr>\n"
+        "<tr><th>File</th><th>Coverage%</th><th>Executed Lines</th><th>Time</th><th>Statements</th></tr>\n"
         );
 
       for i in overview do
@@ -240,12 +273,26 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
            Remove(SplitString(i.outname,"/")),
            "'>",i.inname,"</a></td>");
 
-        codecover := 1 - (i.readnotexeclines / (i.execlines + i.readnotexeclines));
-        # We have to do a slightly horrible thing to get the formatting we want
-        codecover := String(Floor(codecover*100.0));
-        PrintTo(outstream, "<td>",codecover{[1..Length(codecover)-1]},"</td>");
-        PrintTo(outstream, "<td>", i.execlines,"/",i.execlines + i.readnotexeclines,"</td>");
-        PrintTo(outstream, "<td>",i.filetime, "</td><td>",i.fileexec,"</td>");
+        if IsBound(i.execlines) and IsBound(i.readnotexeclines) then
+            codecover := 1 - (i.readnotexeclines / (i.execlines + i.readnotexeclines));
+            # We have to do a slightly horrible thing to get the formatting we want
+            codecover := String(Floor(codecover*100.0));
+            PrintTo(outstream, "<td>",codecover{[1..Length(codecover)-1]},"</td>");
+        else
+            PrintTo(outstream, "<td>N/A</td>");
+        fi;
+
+        if IsBound(i.readnotexeclines) then
+            PrintTo(outstream, "<td>", i.execlines,"/",i.execlines + i.readnotexeclines,"</td>");
+        else
+            PrintTo(outstream, "<td>", i.execlines, "</td>");
+        fi;
+
+        if IsBound(i.filetime) and IsBound(i.fileexec) then
+            PrintTo(outstream, "<td>",i.filetime, "</td><td>",i.fileexec,"</td>");
+        else
+            PrintTo(outstream, "<td>N/A</td><td>N/A</td>");
+        fi;
         PrintTo(outstream, "</tr>");
       od;
 
@@ -288,22 +335,28 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
             # Check for lines which are executed, but not read
 
             if ForAny(fileinfo[2], x -> (x[1] = 0 and x[2] > 0) and not warnedExecNotRead) then
-              Print("Warning: There are statements in ", fileinfo[1],"\n",
-                    "which are marked executed but not marked as read. Your profile may not\n",
-                    "show lines which were read but not executed.\n",
-                    "Please call ProfileLineByLine before loading any files you wish to profile.\n",
-                    "You can use the --prof/--cover command line option to begin profiling\n",
-                    "before GAP starts to profile library code.\n",
-                    "(This warning will only be printed once.)\n");
+              Print("# Warning: Some lines marked executed but not read. If you\n",
+                    "# want to see which lines are NOT executed,\n",
+                    "# use the --prof/--cover command line options\n");
               warnedExecNotRead := true;
             fi;
 
-            Add(overview, rec(outname := outname, inname := infile,
-            filetime := Sum(fileinfo[2], x -> x[3]),
-            fileexec := Sum(fileinfo[2], x -> x[2]),
-            execlines := Length(Filtered(fileinfo[2], x -> (x[2] >= 1))),
-            readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] >= 1 and x[2] = 0)))));
-            outputhtml(allLines, fileinfo[2], callinfo[2], outstream);
+            fileview := rec(outname := outname,
+                            inname := infile,
+                            execlines := Length(Filtered(fileinfo[2], x -> (x[2] >= 1))));
+
+            if _prof_fileHasTiming(fileinfo) then
+                fileview.fileexec := Sum(fileinfo[2], x -> x[2]);
+                fileview.filetime := Sum(fileinfo[2], x -> x[3]);
+            fi;
+
+            if _prof_fileHasCoverage(fileinfo) then
+                fileview.readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] >= 1 and x[2] = 0)));
+            fi;
+            
+            Add(overview, fileview);
+
+            outputhtml(allLines, fileinfo, callinfo[2], outstream);
 
             CloseStream(outstream);
         fi;

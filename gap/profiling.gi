@@ -18,7 +18,17 @@ _Prof_PrettyPrintFunction := function(f)
   return Concatenation(f.name, "@", f.filename, ":", String(f.line));
 end;
 
-
+# This just makes it easy to give dictionaries a default value 
+_prof_LookupWithDefault := function(dict, val, default)
+    local v;
+    v := LookupDictionary(dict, val);
+    if v = fail then
+        return default;
+    else
+        return v;
+    fi;
+end;
+    
 #############################################################################
 ##
 ##
@@ -97,7 +107,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           infile, outname, instream, outstream, line, allLines,
           counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
-          outputhtml, outputoverviewhtml, LookupWithDefault,
+          outputhtml, outputoverviewhtml,
           warnedExecNotRead, filebuf;
 
     if Length(arg) < 2 or Length(arg) > 3 then
@@ -146,15 +156,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       warnedExecNotRead := true;
     fi;
 
-    LookupWithDefault := function(dict, val, default)
-        local v;
-        v := LookupDictionary(dict, val);
-        if v = fail then
-            return default;
-        else
-            return v;
-        fi;
-    end;
+
 
     outputhtml := function(lines, coverage, subfunctions, outstream)
       local i, outchar, str, time, calls, calledfns, linkname, fn, name, filebuf;

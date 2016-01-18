@@ -5,8 +5,7 @@
 # metadata in PackageInfo.g.
 #
 LoadPackage( "profiling" );
-dirs := DirectoriesPackageLibrary( "profiling", "tst" )[1]![1];
 
-TestDirectory(dirs, rec(exitGAP := true));
+TestDirectory(DirectoriesPackageLibrary( "profiling", "tst" )[1], rec(exitGAP := true));
 
 FORCE_QUIT_GAP(1);

@@ -276,9 +276,13 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
           break;
           case IntoFun:
           {
+            // Record which line called this function
             called_functions[calling_exec.FileId][calling_exec.Line].insert(buildFunctionName(ret));
+            // Add this function to the stack of executing functions
             function_stack.push_back(buildFunctionName(ret));
+            // And to stack of executed files/line numbers
             line_stack.push_back(calling_exec);
+            // We also store the amount of time spent in this stack as well.
             line_times_stack.push_back(
               TimeStash(runtime_lines[calling_exec.FileId][calling_exec.Line],
                         runtime_with_children_lines[calling_exec.FileId][calling_exec.Line],

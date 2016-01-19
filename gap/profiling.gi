@@ -45,7 +45,7 @@ InstallGlobalFunction("OutputFlameGraphInput",function(args...)
   if Length(args) = 2 then
     outstream := OutputTextFile(args[2], false);
     if outstream = fail then
-      ErrorMayQuit("Unable to write to file ", outstream);
+      ErrorNoReturn("Unable to write to file ", outstream);
     fi;
   else
     retstring := "";
@@ -147,7 +147,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           warnedExecNotRead, filebuf, fileview, flame;
 
     if Length(arg) < 2 or Length(arg) > 3 then
-      ErrorMayQuit("Usage: OutputAnnotatedCodeCoverageFiles(data, [indir,] outdir)");
+      ErrorNoReturn("Usage: OutputAnnotatedCodeCoverageFiles(data, [indir,] outdir)");
     fi;
 
     data := arg[1];
@@ -176,7 +176,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
                                 IO.S_IROTH+IO.S_IXOTH);
 
     if IO_opendir(outdir) = fail then
-      ErrorMayQuit("Unable to access directory ", outdir);
+      ErrorNoReturn("Unable to access directory ", outdir);
     fi;
 
     IO_closedir();

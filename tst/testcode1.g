@@ -12,5 +12,6 @@ f := function(a)
 	if a > 2 then
 		x := 1;
 	fi;
+	Intersection(AlternatingGroup(8), AlternatingGroup(8)*(1,2));
 	return x;
 end;

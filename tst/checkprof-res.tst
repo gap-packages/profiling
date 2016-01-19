@@ -9,7 +9,7 @@ gap> dir := DirectoryTemporary();;
 gap> file := Filename(dir, "cheese.gz");;
 gap> testdir:= DirectoriesPackageLibrary( "profiling", "tst" )[1];;
 gap> Read(Filename(testdir, "testcode1.g"));
-gap> CoverageLineByLine(file);
+gap> ProfileLineByLine(file, rec(resolution := 10));
 true
 gap> Read(Filename(testdir, "testcode2.g"));
 gap> f(1);;
@@ -17,20 +17,16 @@ gap> f(-1);;
 gap> UnprofileLineByLine();
 true
 gap> OutputAnnotatedCodeCoverageFiles(file, Filename(dir, "outdir"));
-# Warning: Some lines marked executed but not read. If you
-# want to see which lines are NOT executed,
-# use the --prof/--cover command line options
 gap> IsReadableFile(Filename(dir, "outdir/index.html"));
 true
+gap> OutputFlameGraph(file, Filename(dir, "flame"));
 gap> IsReadableFile(Filename(dir, "flame"));
 true
 gap> x := ReadLineByLineProfile(file);;
 gap> OutputAnnotatedCodeCoverageFiles(x, Filename(dir, "outdir2"));
-# Warning: Some lines marked executed but not read. If you
-# want to see which lines are NOT executed,
-# use the --prof/--cover command line options
 gap> IsReadableFile(Filename(dir, "outdir2/index.html"));
 true
+gap> OutputFlameGraph(x, Filename(dir, "flame2"));
 gap> IsReadableFile(Filename(dir, "flame2"));
 true
 gap> STOP_TEST("genprof.tst", 1);

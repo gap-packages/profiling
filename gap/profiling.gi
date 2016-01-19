@@ -84,7 +84,7 @@ InstallGlobalFunction("OutputFlameGraph", function(args...)
   outstream := OutputTextString(outstr, false);
   Process(DirectoryCurrent(), Filename(Directory("/bin"),"/sh"),
           InputTextString(instr), outstream,
-          ["-c", "/Users/caj/reps/gap/gap/pkg/profiling/FlameGraph/flamegraph.pl"]);
+          ["-c", Filename(DirectoriesPackageLibrary( "profiling", "FlameGraph" ),"flamegraph.pl")]);
 
   if Length(args) = 1 then
     return outstr;

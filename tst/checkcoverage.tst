@@ -22,15 +22,11 @@ gap> OutputAnnotatedCodeCoverageFiles(file, Filename(dir, "outdir"));
 # use the --prof/--cover command line options
 gap> IsReadableFile(Filename(dir, "outdir/index.html"));
 true
-gap> IsReadableFile(Filename(dir, "flame"));
-true
 gap> x := ReadLineByLineProfile(file);;
 gap> OutputAnnotatedCodeCoverageFiles(x, Filename(dir, "outdir2"));
 # Warning: Some lines marked executed but not read. If you
 # want to see which lines are NOT executed,
 # use the --prof/--cover command line options
 gap> IsReadableFile(Filename(dir, "outdir2/index.html"));
-true
-gap> IsReadableFile(Filename(dir, "flame2"));
 true
 gap> STOP_TEST("genprof.tst", 1);

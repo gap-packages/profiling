@@ -170,16 +170,12 @@ bool ReadJson(char *json, JsonParse &ret) {
   handler.jp = &ret;
   InsituStringStream ss(json);
 	DEBUG_OUT("START_PARSE");
-  if (reader.Parse<kParseInsituFlag>(ss, handler))
-    return true;
-  else {
-    /* ParseErrorCode e = reader.GetParseErrorCode();
-    size_t o = reader.GetErrorOffset();
-    std::cout << "Error: " << GetParseError_En(e) << std::endl;
-    ;
-    std::cout << " at offset " << o << " near '"
-              << std::string(json).substr(o, 10) << "...'" << std::endl;
-		*/
-  	return false;
-	}
+  try
+  {
+    if (reader.Parse<kParseInsituFlag>(ss, handler))
+      return true;
+  }
+  catch(...) // catch any bad parsing and just throw it away
+  { }
+  return false;
 }

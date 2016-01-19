@@ -14,12 +14,12 @@ enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4, StringId = 5, Info 
 ProfType CharToProf(char c)
 {
   if(c == 'R') return Read;
-  if(c == 'E') return Exec;
+  if(c == 'E' || c == 'X') return Exec;
   if(c == 'I') return IntoFun;
   if(c == 'O') return OutFun;
   if(c == 'S') return StringId;
   if(c == '_') return Info;
-  throw GAPException("Invalid Type in profile");
+  throw GAPException("Invalid 'Type' in profile");
 }
 
 struct JsonParse
@@ -201,6 +201,7 @@ struct Stream {
 
 Obj READ_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
 {
+try{
     bool isCover = false;
     std::string timeType;
     int failedparse = 0;
@@ -341,10 +342,10 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
       }
       else
       {
-        // We allow a couple of failed parses to deal with truncated files
+        // We allow a few failed parses to deal with truncated files
         failedparse++;
-        if(failedparse > 2) {
-          return Fail;
+        if(failedparse > 4) {
+          throw GAPException("Malformed profile");
         }
       }
 
@@ -442,6 +443,10 @@ Obj READ_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
     r.set("info", info);
 
     return GAP_make(r);
+} catch (const GAPException& exp) {
+  ErrorMayQuit(exp.what(), 0, 0);
+}
+return Fail;
 }
 
 

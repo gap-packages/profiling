@@ -28,35 +28,36 @@ _prof_LookupWithDefault := function(dict, val, default)
         return v;
     fi;
 end;
-    
+
 #############################################################################
 ##
 ##
-##  <#GAPDoc Label="OutputFlameGraph">
-##  <ManSection>
-##  <Func Name="OutputFlameGraph" Arg="cover, filename"/>
+
 ##
-##  <Description>
-##  <Ref Func="OutputFlameGraph"/> takes <A>cover</A> (an output of
-##  <Ref Func="ReadLineByLineProfile"/>), and a file name. It translates
-##  profiling information in <A>cover</A> into a suitable format to
-##  generate flame graphs.
-##  </Description>
-##  </ManSection>
-##  <#/GAPDoc>
-##
-InstallGlobalFunction("OutputFlameGraph",function(data, filename)
-  local outstream, trace, fun, firstpass;
-  outstream := OutputTextFile(filename, false);
-  if outstream = fail then
-    ErrorMayQuit("Unable to write to file ", outstream);
+InstallGlobalFunction("OutputFlameGraphInput",function(args...)
+  local outstream, trace, fun, firstpass, data, filename, retstring;
+  if Length(args) < 1 or Length(args) > 2 then
+    ErrorNoReturn("Usage: OutputFlameGraph(cover[, filename])");
   fi;
+
+  data := args[1];
+
+  if Length(args) = 2 then
+    outstream := OutputTextFile(args[2], false);
+    if outstream = fail then
+      ErrorMayQuit("Unable to write to file ", outstream);
+    fi;
+  else
+    retstring := "";
+    outstream := OutputTextString(retstring, false);
+  fi;
+
+  SetPrintFormattingStatus(outstream, false);
 
   if not(IsRecord(data)) then
     data := ReadLineByLineProfile(data);
   fi;
 
-  SetPrintFormattingStatus(outstream, false);
   for trace in data.stack_runtimes do
     firstpass := true;
     for fun in trace[1] do
@@ -70,6 +71,26 @@ InstallGlobalFunction("OutputFlameGraph",function(data, filename)
     PrintTo(outstream, " ", String(trace[2]), "\n");
   od;
   CloseStream(outstream);
+  
+  if IsBound(retstring) then
+    return retstring;
+  fi;
+end);
+
+InstallGlobalFunction("OutputFlameGraph", function(args...)
+  local instr, outstr, outstream;
+  instr := OutputFlameGraphInput(args[1]);
+  outstr := "";
+  outstream := OutputTextString(outstr, false);
+  Process(DirectoryCurrent(), Filename(Directory("/bin"),"/sh"),
+          InputTextString(instr), outstream,
+          ["-c", "/Users/caj/reps/gap/gap/pkg/profiling/FlameGraph/flamegraph.pl"]);
+
+  if Length(args) = 1 then
+    return outstr;
+  else
+    FileString(args[2], outstr);
+  fi;
 end);
 
 
@@ -123,7 +144,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml,
-          warnedExecNotRead, filebuf, fileview;
+          warnedExecNotRead, filebuf, fileview, flame;
 
     if Length(arg) < 2 or Length(arg) > 3 then
       ErrorMayQuit("Usage: OutputAnnotatedCodeCoverageFiles(data, [indir,] outdir)");
@@ -253,7 +274,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream,"</table></body></html>");
     end;
 
-    outputoverviewhtml := function(overview, outdir)
+    outputoverviewhtml := function(overview, outdir, haveflame)
       local filename, outstream, codecover, i;
 
       Sort(overview, function(v,w) return v.inname < w.inname; end);
@@ -263,6 +284,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       SetPrintFormattingStatus(outstream, false);
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
       PrintTo(outstream, _prof_CSS);
+      if haveflame then
+        PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
+      fi;
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
         "<tr><th>File</th><th>Coverage%</th><th>Executed Lines</th><th>Time</th><th>Statements</th></tr>\n"
         );
@@ -362,12 +386,17 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         fi;
     od;
 
+    # Just copy the file 'sorttable.js'
     filebuf := ReadAll(InputTextFile(Filename(DirectoriesPackageLibrary( "profiling", "data"), "sorttable.js")));
     outstream := OutputTextFile(Concatenation(outdir, "/sorttable.js"), false);
     SetPrintFormattingStatus(outstream, false);
     PrintTo(outstream, filebuf);
     CloseStream(outstream);
 
-    # Output an overview page
-    outputoverviewhtml(overview, outdir);
+    if ForAny(overview, x -> IsBound(x.filetime) and x.filetime > 0) then
+      OutputFlameGraph(data, Concatenation(outdir, "/flame.svg"));
+      outputoverviewhtml(overview, outdir, true);
+    else
+      outputoverviewhtml(overview, outdir, false);
+    fi;
 end);

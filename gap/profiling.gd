@@ -13,7 +13,22 @@
 #!   <Ref Func="OutputFlameGraph"/>
 DeclareGlobalFunction( "ReadLineByLineProfile" );
 
-#! @Arguments codecover, filename
+
+
+
+#! @Arguments codecover [, filename]
+#! @Description
+#!   Generate an 'svg' file which represents a 'flame graph', a method of visualising
+#!   where time is spent by a program.
+#!   <P/>
+#!   <A>codecover</A> should either be a profile previously read by
+#!   <F>ReadLineByLineProfile</F>, or the filename of a profile.
+#!   <P/>
+#!   The flame graph input will be written to <A>filename</A> (or returned as a
+#!   string if <A>filename</A> is not present).
+DeclareGlobalFunction("OutputFlameGraph");
+
+#! @Arguments codecover [, filename]
 #! @Description
 #!   Generate the input required to draw a 'flame graph', a method of visualising
 #!   where time is spent by a program. One program for drawing flame graphs using
@@ -22,8 +37,9 @@ DeclareGlobalFunction( "ReadLineByLineProfile" );
 #!   <A>codecover</A> should either be a profile previously read by
 #!   <F>ReadLineByLineProfile</F>, or the filename of a profile.
 #!   <P/>
-#!   The flame graph input will be written to <A>filename</A>.
-DeclareGlobalFunction("OutputFlameGraph");
+#!   The flame graph input will be written to <A>filename</A> (or returned as a
+#!   string if <A>filename</A> is not present).
+DeclareGlobalFunction("OutputFlameGraphInput");
 
 #! @Arguments codecover, [indir,] outdir
 #! @Description

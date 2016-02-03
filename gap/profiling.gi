@@ -5,13 +5,130 @@
 #
 InstallGlobalFunction( "ReadLineByLineProfile",
 function(filename)
-  local res;
+  local res, stacks;
   if IsLineByLineProfileActive() then
     Info(InfoWarning, 1, "Reading Profile while still generating it!");
   fi;
   res := READ_PROFILE_FROM_STREAM(USER_HOME_EXPAND(filename), 0);
   return res;
 end );
+
+# Merges a full list of profiles -- can run out of memory for many profiles.
+BIND_GLOBAL("_prof_mergeProfiles",
+function(filenames)
+  local profs, f, outprof, p, line, file, line_info, line_function_calls,
+  stacks, unionlist, linefunccpy, i;
+
+  if Size(filenames) = 0 then
+    ErrorNoReturn("Filenames list must be non-empty");
+  fi;
+
+  profs := [];
+  # First turn all filenames into profiles
+  for f in filenames do
+    if IsRecord(f) then
+      Add(profs, f);
+    else
+      Add(profs, ReadLineByLineProfile(f));
+    fi;
+  od;
+
+  if not ForAll(profs, x -> x.info.is_cover = profs[1].info.is_cover) then
+    ErrorNoReturn("Some profiles are covers, some are time profiles");
+  fi;
+
+  if not ForAll(profs, x -> x.info.time_type = profs[1].info.time_type) then
+    ErrorNoReturn("Some profiles use wall time, some use CPU time");
+  fi;
+
+  outprof := rec();
+  outprof.info := profs[1].info;
+
+  # merge runtimes
+  stacks := DictionaryBySort(true);
+  for p in profs do
+    for line in p.stack_runtimes do
+      if KnowsDictionary(stacks, line[1]) then
+        AddDictionary(stacks, line[1], LookupDictionary(stacks, line[1]) + line[2]);
+      else
+        AddDictionary(stacks, line[1], line[2]);
+      fi;
+    od;
+  od;
+  # Woo, internal datastructure abuse
+  outprof.stack_runtimes := stacks!.entries;
+
+  line_info := DictionaryBySort(true);
+  for p in profs do
+    for file in p.line_info do
+      if KnowsDictionary(line_info, file[1]) then
+        AddDictionary(line_info, file[1],
+          file[2] + LookupDictionary(line_info, file[1]));
+      else
+        AddDictionary(line_info, file[1], file[2]);
+      fi;
+    od;
+  od;
+  # Woo, internal datastructure abuse
+  outprof.line_info := line_info!.entries;
+
+  line_function_calls := DictionaryBySort(true);
+  for p in profs do
+    for file in p.line_function_calls do
+
+      if KnowsDictionary(line_function_calls, file[1]) then
+        unionlist := [];
+        linefunccpy := LookupDictionary(line_function_calls, file[1]);
+        for i in [1..Maximum(Length(file[2]), Length(linefunccpy))] do
+          if IsBound(file[2][i]) and IsBound(linefunccpy[i]) then
+            unionlist[i] := Union(file[2][i], linefunccpy[i]);
+          elif IsBound(file[2][i]) then
+            unionlist[i] := Set(file[2][i]);
+          else
+            unionlist[i] := Set(linefunccpy[i]);
+          fi;
+        od;
+        AddDictionary(line_function_calls, file[1], unionlist);
+      else
+        AddDictionary(line_function_calls, file[1], file[2]);
+      fi;
+
+    od;
+  od;
+  outprof.line_function_calls := line_function_calls!.entries;
+
+  return outprof;
+end );
+
+InstallGlobalFunction( "MergeLineByLineProfiles",
+function(filenames)
+  local ret, prof, f;
+
+  if Size(filenames) = 0 then
+    ErrorNoReturn("Filenames list must be non-empty");
+  fi;
+
+
+  ret := fail;
+
+  # Merge in pairs, else we can run out of memory.
+  for f in filenames do
+    if IsRecord(f) then
+      prof := f;
+    else
+      # First turn all filenames into profiles
+      prof := ReadLineByLineProfile(f);
+    fi;
+
+    if ret = fail then
+      ret := prof;
+    else
+      ret := _prof_mergeProfiles([ret, prof]);
+    fi;
+  od;
+
+  return ret;
+end);
 
 # This internal function just pretty prints a function object
 _Prof_PrettyPrintFunction := function(f)

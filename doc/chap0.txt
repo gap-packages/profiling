@@ -6,10 +6,10 @@
                [1X Line by line profiling and code coverage for [5XGAP[105X [101X
   
   
-                                     0.4.0
+                                     0.5.0
   
   
-                                   19/01/2016
+                                   03/02/2016
   
   
                              Christopher Jefferson
@@ -33,9 +33,10 @@
   1 [33X[0;0Yprofiling automatic generated documentation[133X
     1.1 [33X[0;0Yprofiling automatic generated documentation of global functions[133X
       1.1-1 ReadLineByLineProfile
-      1.1-2 OutputFlameGraph
-      1.1-3 OutputFlameGraphInput
-      1.1-4 OutputAnnotatedCodeCoverageFiles
+      1.1-2 MergeLineByLineProfiles
+      1.1-3 OutputFlameGraph
+      1.1-4 OutputFlameGraphInput
+      1.1-5 OutputAnnotatedCodeCoverageFiles
   
   
   [32X

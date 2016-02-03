@@ -392,10 +392,12 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
     end;
 
     outputoverviewhtml := function(overview, outdir, haveflame)
-      local filename, outstream, codecover, i;
+      local filename, outstream, codecover, i, any_timeexec;
 
       Sort(overview, function(v,w) return v.inname < w.inname; end);
 
+      any_timeexec := ForAny(overview, i -> IsBound(i.filetime) and IsBound(i.fileexec) );
+      
       filename := Concatenation(outdir, "/index.html");
       outstream := OutputTextFile(filename, false);
       SetPrintFormattingStatus(outstream, false);
@@ -405,8 +407,11 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
       fi;
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
-        "<tr><th>File</th><th>Coverage%</th><th>Executed Lines</th><th>Time</th><th>Statements</th></tr>\n"
-        );
+        "<tr><th>File</th><th>Coverage%</th><th>Executed Lines</th>");
+      if any_timeexec then
+        PrintTo(outstream, "<th>Time</th><th>Statements</th></tr>");
+      fi;
+      PrintTo(outstream, "\n");
 
       for i in overview do
         PrintTo(outstream, "<tr>");
@@ -429,10 +434,12 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
             PrintTo(outstream, "<td>", i.execlines, "</td>");
         fi;
 
-        if IsBound(i.filetime) and IsBound(i.fileexec) then
-            PrintTo(outstream, "<td>",i.filetime, "</td><td>",i.fileexec,"</td>");
-        else
-            PrintTo(outstream, "<td>N/A</td><td>N/A</td>");
+        if any_timeexec then
+          if IsBound(i.filetime) and IsBound(i.fileexec) then
+              PrintTo(outstream, "<td>",i.filetime, "</td><td>",i.fileexec,"</td>");
+          else
+              PrintTo(outstream, "<td>N/A</td><td>N/A</td>");
+          fi;
         fi;
         PrintTo(outstream, "</tr>");
       od;

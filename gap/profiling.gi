@@ -428,9 +428,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
         if IsBound(i.execlines) and IsBound(i.readnotexeclines) then
             codecover := 1 - (i.readnotexeclines / (i.execlines + i.readnotexeclines));
-            # We have to do a slightly horrible thing to get the formatting we want
-            codecover := String(Floor(codecover*100.0));
-            PrintTo(outstream, "<td>",codecover{[1..Length(codecover)-1]},"</td>");
+            codecover := String(Int(codecover*100));
+            PrintTo(outstream, "<td>",codecover,"</td>");
         else
             PrintTo(outstream, "<td>N/A</td>");
         fi;

@@ -426,7 +426,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
       fi;
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
-        "<thead><tr><th>File</th><th>Coverage%</th><th>Executed Lines</th>");
+        "<thead><tr><th>File</th><th>Coverage%</th><th>Executed Lines</th><th>Total Lines</th>");
       if any_timeexec then
         PrintTo(outstream, "<th>Time</th><th>Statements</th>");
       fi;
@@ -446,10 +446,11 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
             PrintTo(outstream, "<td>N/A</td>");
         fi;
 
+        PrintTo(outstream, "<td>", i.execlines, "</td>");
         if IsBound(i.readnotexeclines) then
-            PrintTo(outstream, "<td>", i.execlines,"/",i.execlines + i.readnotexeclines,"</td>");
+            PrintTo(outstream, "<td>", i.execlines + i.readnotexeclines, "</td>");
         else
-            PrintTo(outstream, "<td>", i.execlines, "</td>");
+            PrintTo(outstream, "<td>?</td>");
         fi;
 
         if any_timeexec then

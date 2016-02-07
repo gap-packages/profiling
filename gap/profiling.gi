@@ -326,12 +326,17 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
       PrintTo(outstream, "<table class=\"sortable\">\n");
 
+      PrintTo(outstream, "<thead>");
+      PrintTo(outstream, "<tr>");
       if hasTiming then
-        PrintTo(outstream, "<tr><th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><tr>\n");
+        PrintTo(outstream, "<th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th>\n");
       else
-        PrintTo(outstream, "<tr><th>Line</th><th>Code</th><tr>\n");
+        PrintTo(outstream, "<th>Line</th><th>Code</th>\n");
       fi;
+      PrintTo(outstream, "</tr>");
+      PrintTo(outstream, "</thead>\n");
       
+      PrintTo(outstream, "<tbody>\n");
       for i in [1..Length(lines)] do
         str := _prof_encodeHTML(lines[i]);
 
@@ -388,7 +393,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         PrintTo(outstream, "</tr>\n");
       od;
 
-      PrintTo(outstream,"</table></body></html>");
+      PrintTo(outstream, "</tbody>\n");
+      PrintTo(outstream, "</table></body></html>\n");
     end;
 
     outputoverviewhtml := function(overview, outdir, haveflame)
@@ -407,12 +413,13 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
       fi;
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
-        "<tr><th>File</th><th>Coverage%</th><th>Executed Lines</th>");
+        "<thead><tr><th>File</th><th>Coverage%</th><th>Executed Lines</th>");
       if any_timeexec then
-        PrintTo(outstream, "<th>Time</th><th>Statements</th></tr>");
+        PrintTo(outstream, "<th>Time</th><th>Statements</th>");
       fi;
-      PrintTo(outstream, "\n");
+      PrintTo(outstream, "</tr></thead>\n");
 
+      PrintTo(outstream, "<tbody>\n");
       for i in overview do
         PrintTo(outstream, "<tr>");
         PrintTo(outstream, "<td><a href='",
@@ -441,10 +448,11 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
               PrintTo(outstream, "<td>N/A</td><td>N/A</td>");
           fi;
         fi;
-        PrintTo(outstream, "</tr>");
+        PrintTo(outstream, "</tr>\n");
       od;
 
-      PrintTo(outstream,"</table></body></html>");
+      PrintTo(outstream, "</tbody>\n");
+      PrintTo(outstream, "</table></body></html>\n");
       CloseStream(outstream);
     end;
 

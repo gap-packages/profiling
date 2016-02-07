@@ -237,6 +237,19 @@ th {
 table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after {
     content: " \25B4\25BE"
 }
+
+/* HSV gradient made using http://www.perbang.dk/rgbgradient/ */
+td.coverage00 { background-color: #FF0000; }
+td.coverage10 { background-color: #F83100; }
+td.coverage20 { background-color: #F25F00; }
+td.coverage30 { background-color: #EB8B00; }
+td.coverage40 { background-color: #E5B500; }
+td.coverage50 { background-color: #DFDC00; }
+td.coverage60 { background-color: #B0D800; }
+td.coverage70 { background-color: #81D200; }
+td.coverage80 { background-color: #55CB00; }
+td.coverage90 { background-color: #2CC500; }
+td.coverage100 { background-color: #04BF00; }
 </style>""";
 
 # Checks if a file has correct coverage
@@ -428,8 +441,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
         if IsBound(i.execlines) and IsBound(i.readnotexeclines) then
             codecover := 1 - (i.readnotexeclines / (i.execlines + i.readnotexeclines));
-            codecover := String(Int(codecover*100));
-            PrintTo(outstream, "<td>",codecover,"</td>");
+            PrintTo(outstream, "<td class='coverage",Int(codecover*10),"0'>",Int(codecover*100),"</td>");
         else
             PrintTo(outstream, "<td>N/A</td>");
         fi;

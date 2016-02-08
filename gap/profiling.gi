@@ -237,6 +237,19 @@ th {
 table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after {
     content: " \25B4\25BE"
 }
+
+/* HSV gradient made using http://www.perbang.dk/rgbgradient/ */
+td.coverage00 { background-color: #FF0000; }
+td.coverage10 { background-color: #F83100; }
+td.coverage20 { background-color: #F25F00; }
+td.coverage30 { background-color: #EB8B00; }
+td.coverage40 { background-color: #E5B500; }
+td.coverage50 { background-color: #DFDC00; }
+td.coverage60 { background-color: #B0D800; }
+td.coverage70 { background-color: #81D200; }
+td.coverage80 { background-color: #55CB00; }
+td.coverage90 { background-color: #2CC500; }
+td.coverage100 { background-color: #04BF00; }
 </style>""";
 
 # Checks if a file has correct coverage
@@ -326,12 +339,17 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
       PrintTo(outstream, "<table class=\"sortable\">\n");
 
+      PrintTo(outstream, "<thead>");
+      PrintTo(outstream, "<tr>");
       if hasTiming then
-        PrintTo(outstream, "<tr><th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><tr>\n");
+        PrintTo(outstream, "<th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th>\n");
       else
-        PrintTo(outstream, "<tr><th>Line</th><th>Code</th><tr>\n");
+        PrintTo(outstream, "<th>Line</th><th>Code</th>\n");
       fi;
+      PrintTo(outstream, "</tr>");
+      PrintTo(outstream, "</thead>\n");
       
+      PrintTo(outstream, "<tbody>\n");
       for i in [1..Length(lines)] do
         str := _prof_encodeHTML(lines[i]);
 
@@ -388,7 +406,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         PrintTo(outstream, "</tr>\n");
       od;
 
-      PrintTo(outstream,"</table></body></html>");
+      PrintTo(outstream, "</tbody>\n");
+      PrintTo(outstream, "</table></body></html>\n");
     end;
 
     outputoverviewhtml := function(overview, outdir, haveflame)
@@ -407,12 +426,13 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
       fi;
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
-        "<tr><th>File</th><th>Coverage%</th><th>Executed Lines</th>");
+        "<thead><tr><th>File</th><th>Coverage%</th><th>Executed Lines</th><th>Total Lines</th>");
       if any_timeexec then
-        PrintTo(outstream, "<th>Time</th><th>Statements</th></tr>");
+        PrintTo(outstream, "<th>Time</th><th>Statements</th>");
       fi;
-      PrintTo(outstream, "\n");
+      PrintTo(outstream, "</tr></thead>\n");
 
+      PrintTo(outstream, "<tbody>\n");
       for i in overview do
         PrintTo(outstream, "<tr>");
         PrintTo(outstream, "<td><a href='",
@@ -421,17 +441,16 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
         if IsBound(i.execlines) and IsBound(i.readnotexeclines) then
             codecover := 1 - (i.readnotexeclines / (i.execlines + i.readnotexeclines));
-            # We have to do a slightly horrible thing to get the formatting we want
-            codecover := String(Floor(codecover*100.0));
-            PrintTo(outstream, "<td>",codecover{[1..Length(codecover)-1]},"</td>");
+            PrintTo(outstream, "<td class='coverage",Int(codecover*10),"0'>",Int(codecover*100),"</td>");
         else
             PrintTo(outstream, "<td>N/A</td>");
         fi;
 
+        PrintTo(outstream, "<td>", i.execlines, "</td>");
         if IsBound(i.readnotexeclines) then
-            PrintTo(outstream, "<td>", i.execlines,"/",i.execlines + i.readnotexeclines,"</td>");
+            PrintTo(outstream, "<td>", i.execlines + i.readnotexeclines, "</td>");
         else
-            PrintTo(outstream, "<td>", i.execlines, "</td>");
+            PrintTo(outstream, "<td>?</td>");
         fi;
 
         if any_timeexec then
@@ -441,10 +460,11 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
               PrintTo(outstream, "<td>N/A</td><td>N/A</td>");
           fi;
         fi;
-        PrintTo(outstream, "</tr>");
+        PrintTo(outstream, "</tr>\n");
       od;
 
-      PrintTo(outstream,"</table></body></html>");
+      PrintTo(outstream, "</tbody>\n");
+      PrintTo(outstream, "</table></body></html>\n");
       CloseStream(outstream);
     end;
 

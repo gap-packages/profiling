@@ -1,3 +1,8 @@
+0.5.1
+=====
+
+Several small tweaks to improve HTML output quality
+
 0.5.0
 =====
 

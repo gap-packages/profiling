@@ -19,7 +19,7 @@ needed-pkgs:
       url: "http://www.math.rwth-aachen.de/~Frank.Luebeck/GAPDoc"
     - name: "IO"
       version: ">= 4.4.4"
-      url: "http://gap-packages.github.io/io/"
+      url: "https://gap-packages.github.io/io"
 
 www: http://gap-packages.github.io/profiling/
 readme: http://gap-packages.github.io/profiling/README

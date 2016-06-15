@@ -50,6 +50,12 @@ ArchiveFormats := ".tar.gz",
 ##
 Status := "dev",
 
+SourceRepository := rec( 
+  Type := "git", 
+  URL := "https://github.com/gap-packages/profiling"
+),
+IssueTrackerURL := Concatenation( ~.SourceRepository.URL, "/issues" ),
+
 AbstractHTML   :=  "",
 
 PackageDoc := rec(

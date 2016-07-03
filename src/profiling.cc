@@ -234,9 +234,13 @@ try{
 
     long long total_ticks = 0;
 
-    Stream infile(CSTR_STRING(filename));
+    if(!(IS_STRING(filename))) {
+      ErrorMayQuit("Filename must be a string", 0, 0);
+    }
+    Obj filenamestr = CopyToStringRep(filename);
+    Stream infile(CSTR_STRING(filenamestr));
     if(infile.fail()) {
-      ErrorMayQuit("Unable to open file %s", (Int)filename, 0);
+      ErrorMayQuit("Unable to open file %s", (Int)CSTR_STRING(filenamestr), 0);
       return Fail;
     }
 

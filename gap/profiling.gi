@@ -587,3 +587,24 @@ function(data, outfile)
     IO_Close(outstream);
 end);
 
+InstallGlobalFunction("LineByLineProfileFunction",
+  function(f, args)
+    local dir;
+    if IsLineByLineProfileActive() then
+      ErrorNoReturn("Cannot profile when profiling already active!");
+    fi;
+    dir := DirectoryTemporary();
+    ProfileLineByLine(Filename(dir, "/prof.gz"));
+    CallFuncList(f, args);
+    UnprofileLineByLine();
+    OutputAnnotatedCodeCoverageFiles(Filename(dir, "/prof.gz"),
+                                     Filename(dir, "/output"));
+    if ARCH_IS_MAC_OS_X() then
+      Exec(Concatenation("open ",Filename(dir, "/output/index.html")));
+    elif ARCH_IS_WINDOWS() then
+      Exec(Concatenation("cmd /c start ",Filename(dir, "/output/index.html")));
+    else
+      Exec(Concatenation("xdg-open ",Filename(dir, "/output/index.html")));
+    fi;
+  end);
+

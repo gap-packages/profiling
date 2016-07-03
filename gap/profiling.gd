@@ -77,3 +77,11 @@ DeclareGlobalFunction("OutputAnnotatedCodeCoverageFiles");
 #!   The output will be written to the file <A>outfile</A>.
 #!   <P/>
 DeclareGlobalFunction("OutputJsonCoverage");
+
+#! @Arguments function, arguments
+#! @Description
+#!   Calls <A>function</A> with the list of arguments <A>arguments</A>,
+#!   and opens a time profile of the resulting call in the default web
+#!   browser.
+#!   <P/>
+DeclareGlobalFunction("LineByLineProfileFunction");

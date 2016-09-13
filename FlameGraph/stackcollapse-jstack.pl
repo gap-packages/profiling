@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 #
 # stackcolllapse-jstack.pl	collapse jstack samples into single lines.
 #

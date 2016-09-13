@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 #
 # thcstackcollapse.pl	collapse thread hot/cold multiline stacks into
 #			single lines.

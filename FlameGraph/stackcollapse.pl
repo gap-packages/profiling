@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 #
 # stackcolllapse.pl	collapse multiline stacks into single lines.
 #

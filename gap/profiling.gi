@@ -212,10 +212,9 @@ end);
 
 
 # The CSS we want to inject into every page
-_prof_CSS :=
+_prof_CSS_std :=
 """<style>
 table { border-collapse: collapse }
-tr .linenum { text-align: right; }
 tr:nth-child(odd)  { background-color: #EEE; }
 tr:nth-child(even)  { background-color: #FFF; }
 tr:nth-child(odd).exec  { background-color: #0F0; }
@@ -249,8 +248,26 @@ td.coverage60 { background-color: #B0D800; }
 td.coverage70 { background-color: #81D200; }
 td.coverage80 { background-color: #55CB00; }
 td.coverage90 { background-color: #2CC500; }
-td.coverage100 { background-color: #04BF00; }
+td.coverage100 { background-color: #04BF00; }""";
+
+# handle the alignment of columns containing numbers
+_prof_CSS_overview :=
+"""
+td:nth-child(2) { text-align: right; }
+td:nth-child(3) { text-align: right; }
+td:nth-child(4) { text-align: right; }
+td:nth-child(5) { text-align: right; }
+td:nth-child(6) { text-align: right; }
 </style>""";
+
+_prof_CSS_files :=
+"""
+td:nth-child(1) { text-align: right; }
+td:nth-child(2) { text-align: right; }
+td:nth-child(3) { text-align: right; }
+td:nth-child(4) { text-align: right; }
+</style>""";
+
 
 # Checks if a file has correct coverage
 _prof_fileHasCoverage := fileinfo -> not ForAny(fileinfo[2], x -> (x[1] = 0 and x[2] > 0));
@@ -330,7 +347,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       hasCoverage := _prof_fileHasCoverage(fileinfo);
       coverage := fileinfo[2];
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
-      PrintTo(outstream, _prof_CSS);
+      PrintTo(outstream, Concatenation(_prof_CSS_std, _prof_CSS_files));
 
       if not hasCoverage then
         PrintTo(outstream, "<p>This file was read by GAP before profiling was actived, so lines which were not read but not executed are not marked.</p>");
@@ -365,7 +382,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
         # Print start of page
         PrintTo(outstream, "<tr class='", outchar,"'>");
-        PrintTo(outstream, "<td><a name=\"line",i,"\"></a><div class='linenum'>",i,"</div></td>");
+        PrintTo(outstream, "<td><a name=\"line",i,"\"></a>",i,"</td>");
 
         if hasTiming then
             time := "<td></td><td></td><td></td>";
@@ -421,7 +438,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       outstream := OutputTextFile(filename, false);
       SetPrintFormattingStatus(outstream, false);
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
-      PrintTo(outstream, _prof_CSS);
+      PrintTo(outstream, Concatenation(_prof_CSS_std, _prof_CSS_overview));
       if haveflame then
         PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
       fi;

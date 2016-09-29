@@ -273,7 +273,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           infile, outname, instream, outstream, line, allLines,
           counter, overview, i, fileinfo, filenum, callinfo,
           readlineset, execlineset, outchar,
-          outputhtml, outputoverviewhtml,
+          outputhtml, outputoverviewhtml, stringWithSeparators,
           warnedExecNotRead, filebuf, fileview, flame;
 
     if Length(arg) < 2 or Length(arg) > 3 then
@@ -323,6 +323,22 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
     fi;
 
 
+
+    # IntegerToString with insertion of thousand-separators
+    stringWithSeparators := function( n )
+      local i, j, str, withSeps;
+      str := Reversed( String(n) );
+      withSeps := "";
+      j := 0;
+      for i in [1..Length(str)] do
+        withSeps[i+j] := str[i];
+        if i mod 3 = 0 and i < Length(str)  then
+          withSeps[ i+j+1 ] := ',';
+          j := j+1;
+        fi;
+      od;
+      return Reversed( withSeps );
+    end;
 
     outputhtml := function(lines, fileinfo, subfunctions, outstream)
       local i, outchar, str, time, calls, calledfns, linkname, fn, name, filebuf, coverage, hasTiming, hasCoverage;
@@ -376,11 +392,15 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
               fi;
 
               if coverage[i][3] >= 1 or coverage[i][4] >= 1 then
-                time := Concatenation("<td>",String(calls), "</td><td>",
-                                      String(coverage[i][3]),"</td><td>",
-                                      String(coverage[i][4]+coverage[i][3]), "</td>");
+                time := Concatenation("<td>",stringWithSeparators(calls),
+                                      "</td><td>",
+                                      stringWithSeparators(coverage[i][3]),
+                                      "</td><td>",
+                                      stringWithSeparators(coverage[i][4]+coverage[i][3]),
+                                      "</td>");
               else
-                time := Concatenation("<td>",String(calls),"</td><td></td><td></td>");
+                time := Concatenation("<td>",stringWithSeparators(calls),
+                                      "</td><td></td><td></td>");
               fi;
             fi;
             # totaltime := LookupWithDefault(linedict.recursetime, i, "");
@@ -446,16 +466,19 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
             PrintTo(outstream, "<td>N/A</td>");
         fi;
 
-        PrintTo(outstream, "<td>", i.execlines, "</td>");
+        PrintTo(outstream, "<td>", stringWithSeparators(i.execlines), "</td>");
         if IsBound(i.readnotexeclines) then
-            PrintTo(outstream, "<td>", i.execlines + i.readnotexeclines, "</td>");
+            PrintTo(outstream, "<td>",
+                    stringWithSeparators(i.execlines + i.readnotexeclines), "</td>");
         else
             PrintTo(outstream, "<td>?</td>");
         fi;
 
         if any_timeexec then
           if IsBound(i.filetime) and IsBound(i.fileexec) then
-              PrintTo(outstream, "<td>",i.filetime, "</td><td>",i.fileexec,"</td>");
+              PrintTo(outstream, "<td>",
+                      stringWithSeparators(i.filetime), "</td><td>",
+                      stringWithSeparators(i.fileexec), "</td>");
           else
               PrintTo(outstream, "<td>N/A</td><td>N/A</td>");
           fi;

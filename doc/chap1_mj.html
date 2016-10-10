@@ -33,6 +33,8 @@
 <span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1_mj.html#X858B23AD78A2A73A">1.1-3 OutputFlameGraph</a></span>
 <span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1_mj.html#X7C6110C180DE1785">1.1-4 OutputFlameGraphInput</a></span>
 <span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1_mj.html#X87AFADF581A7C1FD">1.1-5 OutputAnnotatedCodeCoverageFiles</a></span>
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1_mj.html#X8436F6FE84513AC9">1.1-6 OutputJsonCoverage</a></span>
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1_mj.html#X849267DE7D84CBBE">1.1-7 LineByLineProfileFunction</a></span>
 </div></div>
 </div>
 
@@ -90,6 +92,24 @@
 <p>Files will be written to the directory <var class="Arg">outdir</var>.</p>
 
 <p>The optional second argument gives a filter, only information about filenames starting with <var class="Arg">indir</var> will be outputted.</p>
+
+<p><a id="X8436F6FE84513AC9" name="X8436F6FE84513AC9"></a></p>
+
+<h5>1.1-6 OutputJsonCoverage</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; OutputJsonCoverage</code>( <var class="Arg">cover</var>, <var class="Arg">outfile</var> )</td><td class="tdright">( function )</td></tr></table></div>
+<p>Takes a previously generated profile and outputs a json coverage file which is amongst other things accepted by codecov.io.</p>
+
+<p><var class="Arg">codecover</var> should either be a profile previously read by <code class="file">ReadLineByLineProfile</code>, or the filename of a profile which will first be read with <code class="file">ReadLineByLineProfile</code>.</p>
+
+<p>The output will be written to the file <var class="Arg">outfile</var>.</p>
+
+<p><a id="X849267DE7D84CBBE" name="X849267DE7D84CBBE"></a></p>
+
+<h5>1.1-7 LineByLineProfileFunction</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; LineByLineProfileFunction</code>( <var class="Arg">function</var>, <var class="Arg">arguments</var> )</td><td class="tdright">( function )</td></tr></table></div>
+<p>Calls <var class="Arg">function</var> with the list of arguments <var class="Arg">arguments</var>, and opens a time profile of the resulting call in the default web browser.</p>
 
 
 <div class="chlinkprevnextbot">&nbsp;<a href="chap0_mj.html">[Top of Book]</a>&nbsp;  <a href="chap0_mj.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap0_mj.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chapInd_mj.html">[Next Chapter]</a>&nbsp;  </div>

@@ -1,6 +1,6 @@
 name: profiling
-version: 0.6.1
-date: 10/10/2016
+version: 0.6.2
+date: 18/10/2016
 description: Line by line profiling and code coverage for GAP
 
 authors:
@@ -27,7 +27,7 @@ packageinfo: http://gap-packages.github.io/profiling/PackageInfo.g
 
 downloads:
     - name: .tar.gz
-      url: https://github.com/gap-packages/profiling/releases/download/v0.6.1/profiling-0.6.1.tar.gz
+      url: https://github.com/gap-packages/profiling/releases/download/v0.6.2/profiling-0.6.2.tar.gz
 
 abstract: 
 

@@ -213,7 +213,7 @@ end);
 
 # The CSS we want to inject into every page
 _prof_CSS_std :=
-"""<style>
+"""
 table { border-collapse: collapse }
 tr:nth-child(odd)  { background-color: #EEE; }
 tr:nth-child(even)  { background-color: #FFF; }
@@ -258,15 +258,20 @@ td:nth-child(3) { text-align: right; }
 td:nth-child(4) { text-align: right; }
 td:nth-child(5) { text-align: right; }
 td:nth-child(6) { text-align: right; }
-</style>""";
+""";
 
-_prof_CSS_files :=
+_prof_CSS_files_withTiming :=
 """
 td:nth-child(1) { text-align: right; }
 td:nth-child(2) { text-align: right; }
 td:nth-child(3) { text-align: right; }
 td:nth-child(4) { text-align: right; }
-</style>""";
+""";
+
+_prof_CSS_files_withoutTiming := 
+"""
+td:nth-child(1) { test-align: right; }
+""";
 
 
 # Checks if a file has correct coverage
@@ -363,7 +368,14 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       hasCoverage := _prof_fileHasCoverage(fileinfo);
       coverage := fileinfo[2];
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
-      PrintTo(outstream, Concatenation(_prof_CSS_std, _prof_CSS_files));
+      PrintTo(outstream, "<style>");
+      PrintTo(outstream, _prof_CSS_std);
+      if hasTiming then
+        PrintTo(outstream, _prof_CSS_files_withTiming);
+      else
+        PrintTo(outstream, _prof_CSS_files_withoutTiming);
+      fi;
+      PrintTo(outstream, "</style>");
 
       if not hasCoverage then
         PrintTo(outstream, "<p>This file was read by GAP before profiling was actived, so lines which were not read but not executed are not marked.</p>");
@@ -458,7 +470,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       outstream := OutputTextFile(filename, false);
       SetPrintFormattingStatus(outstream, false);
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
+      PrintTo(outstream, "<style>");
       PrintTo(outstream, Concatenation(_prof_CSS_std, _prof_CSS_overview));
+      PrintTo(outstream, "</style>");
       if haveflame then
         PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
       fi;

@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 #
 # stackcolllapse-stap.pl	collapse multiline SystemTap stacks
 #				into single lines.

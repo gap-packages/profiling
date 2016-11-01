@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -ws
+#!/usr/bin/env perl -s
 #
 # stackcollapse-recursive  Collapse direct recursive backtraces
 #

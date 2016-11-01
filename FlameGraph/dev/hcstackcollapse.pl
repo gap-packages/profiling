@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 #
 # hcstackcolllapse.pl	collapse hot/cold multiline stacks into single lines.
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 #
 # difffolded.pl 	diff two folded stack files. Use this for generating
 #			flame graph differentials.

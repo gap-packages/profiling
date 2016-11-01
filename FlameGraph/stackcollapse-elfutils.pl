@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 #
 # stackcollapse-elfutils  Collapse elfutils stack (eu-stack) backtraces
 #

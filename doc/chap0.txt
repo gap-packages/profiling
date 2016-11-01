@@ -6,10 +6,10 @@
                [1X Line by line profiling and code coverage for [5XGAP[105X [101X
   
   
-                                     0.6.2
+                                     1.1.0
   
   
-                                   18/10/2016
+                                   01/11/2016
   
   
                              Christopher Jefferson

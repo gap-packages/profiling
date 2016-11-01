@@ -10,8 +10,8 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "0.6.2",
-Date := "18/10/2016", # dd/mm/yyyy format
+Version := "1.1.0",
+Date := "01/11/2016", # dd/mm/yyyy format
 
 Persons := [
   rec(
@@ -68,7 +68,7 @@ PackageDoc := rec(
 ),
 
 Dependencies := rec(
-  GAP := ">= 4.6",
+  GAP := ">= 4.8",
   NeededOtherPackages := [ [ "GAPDoc", ">= 1.5" ], ["IO", ">= 4.4.4" ] ],
   SuggestedOtherPackages := [ ],
   ExternalConditions := [ ],

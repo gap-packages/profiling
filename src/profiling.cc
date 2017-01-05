@@ -46,11 +46,11 @@ struct FullFunction
 {
   std::string name;
   std::string filename;
-  int line;
-  int endline;
+  Int line;
+  Int endline;
 
   FullFunction() {}
-  FullFunction(const std::string& _name, const std::string _file, int _line, int _endline)
+  FullFunction(const std::string& _name, const std::string _file, Int _line, Int _endline)
     : name(_name), filename(_file), line(_line), endline(_endline)
   { }
 

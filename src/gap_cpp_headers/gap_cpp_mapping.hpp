@@ -90,20 +90,6 @@ struct GAP_getter<bool>
 
 
 template<>
-struct GAP_getter<int>
-{
-    bool isa(Obj recval) const
-    { return IS_INTOBJ(recval); }
-
-    int operator()(Obj recval) const
-    {
-        if(!isa(recval))
-            throw GAPException("Invalid attempt to read int");
-        return INT_INTOBJ(recval);
-    }
-};
-
-template<>
 struct GAP_getter<Int>
 {
     bool isa(Obj recval) const
@@ -315,13 +301,6 @@ namespace GAPdetail
 template<typename T>
 struct GAP_maker
 { };
-
-template<>
-struct GAP_maker<int>
-{
-    Obj operator()(int i)
-    { return INTOBJ_INT(i); }
-};
 
 template<>
 struct GAP_maker<Int>

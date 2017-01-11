@@ -1,3 +1,38 @@
+1.2.0
+=====
+
+* Fix 32-bit builds of profiling package
+
+1.1.0
+=====
+
+* Tweak how perl programs are run (again)
+
+
+0.6.2
+=====
+
+* Improve formatting for files with only coverage
+
+0.6.1
+=====
+
+* Handle executable perl scripts
+
+0.6.0
+=====
+
+Bug Fixes
+
+* Don't assume python is 0.6.0
+* Handle bad filenames
+
+New functionality
+
+* Add 'LineByLineProfileFunction', a quick way to profile a function call.
+* Add commas to numbers and align nicer
+* Add support for codecov.io JSON output
+
 0.5.1
 =====
 

@@ -10,15 +10,28 @@ addons:
       - libgmp3-dev
 
 
-
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      env: ABI=32 PKGOPTS="CFLAGS=-m32 LDFLAGS=-m32 LOPTS=-m32 CXXFLAGS=-m32"
+      addons:
+        apt_packages:
+          - libgmp-dev:i386
+          - gcc-multilib
+    - os: linux
+      compiler: gcc
+      addons:
+        apt_packages:
+         - libgmp-dev
 
 install:
   - git clone --depth=2 https://github.com/gap-system/gap.git gapsrc
   - pwd
-  - ( cd gapsrc && ./configure --with-gmp=system && make && make bootstrap-pkg-minimal)
-  - ( cd gapsrc/pkg && git clone --depth=2 https://github.com/gap-packages/io && cd io && ./autogen.sh && ./configure && make )
+  - ( cd gapsrc && ./configure --with-gmp=system && make configure && make -j2 && make bootstrap-pkg-minimal)
+  - ( cd gapsrc/pkg && git clone --depth=2 https://github.com/gap-packages/io && cd io && ./autogen.sh && ./configure ${PKGOPTS} && make )
   - pwd
-  - ( ./autogen.sh && ./configure --with-gaproot=gapsrc && make )
+  - ( ./autogen.sh && ./configure --with-gaproot=gapsrc ${PKGOPTS} && make )
   - pwd
   - ls
   - ls gapsrc

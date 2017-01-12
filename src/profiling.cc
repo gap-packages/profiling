@@ -392,7 +392,6 @@ try{
       std::map<Int, std::set<FullFunction> >& functions = called_functions[*it];
 
       Int max_line = 0;
-
       if(!read_set.empty())
         max_line = std::max(max_line, *(read_set.rbegin()));
 
@@ -402,11 +401,11 @@ try{
       if(!runtime.empty())
         max_line = std::max(max_line, runtime.rbegin()->first);
 
-      if(!runtime_with_children_lines.empty())
-        max_line = std::max(max_line, runtime_with_children_lines.rbegin()->first);
+      if(!runtime_children.empty())
+        max_line = std::max(max_line, runtime_children.rbegin()->first);
 
-      if(!called_functions.empty())
-        max_line = std::max(max_line, called_functions.rbegin()->first);
+      if(!functions.empty())
+        max_line = std::max(max_line, functions.rbegin()->first);
 
       std::vector<std::vector<Int> > line_data;
       std::vector<std::set<FullFunction> > called_data;

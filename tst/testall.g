@@ -16,6 +16,7 @@ failedtest := false;
 
 dir := DirectoriesPackageLibrary( "profiling", "tst" )[1];
 files := DirectoryContents(dir);
+files := List(files, x -> Filename(dir, x));
 tstfiles := Filtered(files, x -> EndsWith(x,".tst"));
 for t in tstfiles do
     fork := IO_fork();

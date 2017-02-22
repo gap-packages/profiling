@@ -9,7 +9,7 @@ function(filename)
   if IsLineByLineProfileActive() then
     Info(InfoWarning, 1, "Reading Profile while still generating it!");
   fi;
-  res := READ_PROFILE_FROM_STREAM(UserHomeExpand(filename), 0);
+  res := READ_PROFILE_FROM_STREAM(USER_HOME_EXPAND(filename), 0);
   return res;
 end );
 
@@ -319,8 +319,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       outdir := outdir![1];
     fi;
 
-    indir := UserHomeExpand(indir);
-    outdir := UserHomeExpand(outdir);
+    indir := USER_HOME_EXPAND(indir);
+    outdir := USER_HOME_EXPAND(outdir);
 
     # Try to make directory (might already exist)
     IO_mkdir(outdir, IO.S_IRUSR+IO.S_IWUSR+IO.S_IXUSR+
@@ -603,7 +603,7 @@ InstallGlobalFunction(OutputJsonCoverage,
 function(data, outfile)
     local outstream, lineinfo, prev, file, lines;
 
-    outfile := UserHomeExpand(outfile);
+    outfile := USER_HOME_EXPAND(outfile);
     outstream := IO_File(outfile, "w");
 
     if not(IsRecord(data)) then

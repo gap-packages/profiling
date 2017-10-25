@@ -195,18 +195,26 @@ InstallGlobalFunction("OutputFlameGraphInput",function(args...)
 end);
 
 InstallGlobalFunction("OutputFlameGraph", function(args...)
-  local instr, outstr, outstream;
-  instr := OutputFlameGraphInput(args[1]);
-  outstr := "";
-  outstream := OutputTextString(outstr, false);
+  local instr, instream, outstr, outstream;
+  if Length(args) = 1 then
+    instr := OutputFlameGraphInput(args[1]);
+    instream := InputTextString(instr);
+
+    outstr := "";
+    outstream := OutputTextString(outstr, false);
+  else
+    OutputFlameGraphInput(args[1], Concatenation(args[2], ".tmp"));
+    instream := InputTextFile(Concatenation(args[2], ".tmp"));
+
+    outstream := OutputTextFile(args[2], false);
+  fi;
+
   Process(DirectoryCurrent(), Filename(Directory("/bin"),"/sh"),
-          InputTextString(instr), outstream,
+          instream, outstream,
           ["-c", Filename(DirectoriesPackageLibrary( "profiling", "FlameGraph" ),"flamegraph.pl")]);
 
   if Length(args) = 1 then
     return outstr;
-  else
-    FileString(args[2], outstr);
   fi;
 end);
 

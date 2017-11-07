@@ -14,9 +14,26 @@ IO_InstallSIGCHLDHandler();
 
 failedtest := false;
 
-dir := DirectoriesPackageLibrary( "profiling", "tst" )[1];
-files := DirectoryContents(dir);
-files := List(files, x -> Filename(dir, x));
+dircontentsrecursive := function(dir)
+    local filelist, dirlist, fulllist;
+    filelist := DirectoryContents(dir);
+    filelist := Filtered(filelist, x -> x[1] <> '.' );
+    filelist := List(filelist, x -> Filename(dir, x));
+    dirlist := Filtered(filelist, IsDirectoryPath);
+    dirlist := List(dirlist, dircontentsrecursive);
+    dirlist := Concatenation(dirlist);
+    return Concatenation([dirlist, filelist]);
+end;
+
+dir := [DirectoriesPackageLibrary( "profiling", "tst/tstall" )[1]];
+# KernelDebug was not added until 4.9
+if IsBound(GAPInfo.KernelInfo.KernelDebug) then
+    Add(dir, DirectoriesPackageLibrary( "profiling", "tst/tst4.9" )[1] );
+else
+    Add(dir, DirectoriesPackageLibrary( "profiling", "tst/tst4.8" )[1] );
+fi;
+
+files := Concatenation(List(dir, dircontentsrecursive));
 tstfiles := Filtered(files, x -> EndsWith(x,".tst"));
 for t in tstfiles do
     fork := IO_fork();

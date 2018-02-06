@@ -290,8 +290,8 @@ _prof_CSS_std :=
 table { border-collapse: collapse }
 tr:nth-child(odd)  { background-color: #EEE; }
 tr:nth-child(even)  { background-color: #FFF; }
-tr:nth-child(odd).exec  { background-color: #0F0; }
-tr:nth-child(even).exec  { background-color: #3F3; }
+tr:nth-child(odd).exec  { background-color: #3E3; }
+tr:nth-child(even).exec  { background-color: #6E6; }
 tr:nth-child(odd).missed  { background-color: #F00; }
 tr:nth-child(even).missed  { background-color: #F33; }
 td, th {

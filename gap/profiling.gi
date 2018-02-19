@@ -411,7 +411,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
       PrintTo(outstream, "<style>");
       PrintTo(outstream, _prof_CSS_std);
-      PrintTo(outstream,"<\style>");
+      PrintTo(outstream,"</style>");
       PrintTo(outstream, "<table class=\"sortable\">\n");
 
       PrintTo(outstream, "<thead>");

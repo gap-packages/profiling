@@ -301,7 +301,7 @@ end;
 InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
     local data, indir, outdir,
           infile, outname, instream, outstream, line, allLines,
-          counter, overview, i, fileinfo, filenum, callinfo,
+          counter, overview, i, fileinfo, filenum, callinfo, calledbyinfo,
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml, stringWithSeparators,
           warnedExecNotRead, filebuf, fileview, flame;
@@ -370,8 +370,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       return Reversed( withSeps );
     end;
 
-    outputhtml := function(lines, fileinfo, subfunctions, outstream)
-      local i, outchar, str, time, calls, calledfns, linkname, fn, name, filebuf, coverage, hasTiming, hasCoverage;
+    outputhtml := function(lines, fileinfo, subfunctions, calledbyfunctions, outstream)
+      local i, outchar, time, calls, calledfns, linkname, fn, name, filebuf, coverage, hasTiming, hasCoverage, funcs;
       hasTiming := _prof_fileHasTiming(fileinfo);
       hasCoverage := _prof_fileHasCoverage(fileinfo);
       coverage := fileinfo[2];
@@ -395,7 +395,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream, "<thead>");
       PrintTo(outstream, "<tr>");
       if hasTiming then
-        PrintTo(outstream, "<th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th>\n");
+        PrintTo(outstream, "<th>Line</th><th>Execs</th><th>Time</th><th>Time+Childs</th><th>Code</th><th>Called Functions</th><th>Called From</th>\n");
       else
         PrintTo(outstream, "<th>Line</th><th>Code</th>\n");
       fi;
@@ -404,7 +404,6 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       
       PrintTo(outstream, "<tbody>\n");
       for i in [1..Length(lines)] do
-        str := _prof_encodeHTML(lines[i]);
 
         if not(IsBound(coverage[i])) or (coverage[i] = [0,0,0,0]) then
           outchar := "ignore";
@@ -440,7 +439,16 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
                                       "</td><td></td><td></td>");
               fi;
             fi;
+
+            PrintTo(outstream, time);
+
+        fi;
+        
+        PrintTo(outstream, "<td><span><tt>", _prof_encodeHTML(lines[i]), "</tt></span></td>");
+
+        if hasTiming then
             # totaltime := LookupWithDefault(linedict.recursetime, i, "");
+
             calledfns := "";
             if Length(subfunctions) >= i then
               for fn in subfunctions[i] do
@@ -453,11 +461,17 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
                 Append(calledfns, Concatenation("<a href=\"",linkname,"#line",String(fn.line),"\">",name,"</a> "));
               od;
             fi;
+            PrintTo(outstream, "<td><span>",calledfns,"</span></td>");
 
-            PrintTo(outstream, time);
-        fi;
-        PrintTo(outstream, "<td><span><tt>",str,"</tt></span></td>");
-        if hasTiming then
+            calledfns := "";
+            if Length(calledbyfunctions) >= i then
+              for fn in calledbyfunctions[i] do
+                linkname := ReplacedString(fn.filename, "/", "_");
+                Append(linkname, ".html");
+                name := Concatenation(fn.filename, ":", String(fn.line));
+                Append(calledfns, Concatenation("<a href=\"",linkname,"#line",String(fn.line),"\">",name,"</a> "));
+              od;
+            fi;
             PrintTo(outstream, "<td><span>",calledfns,"</span></td>");
         fi;
         PrintTo(outstream, "</tr>\n");
@@ -534,6 +548,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
     for filenum in [1..Length(data.line_info)] do
         fileinfo := data.line_info[filenum];
         callinfo := data.line_function_calls[filenum];
+        calledbyinfo := data.line_calling_function_calls[filenum];
         infile := fileinfo[1];
         if Length(indir) <= Length(infile)
                 and indir = infile{[1..Length(indir)]} then
@@ -586,7 +601,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
             
             Add(overview, fileview);
 
-            outputhtml(allLines, fileinfo, callinfo[2], outstream);
+            outputhtml(allLines, fileinfo, callinfo[2], calledbyinfo[2], outstream);
 
             CloseStream(outstream);
         fi;

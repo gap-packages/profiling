@@ -85,6 +85,44 @@ struct GAP_maker<FullFunction>
 };
 }
 
+struct Location
+{
+  std::string filename;
+  std::string name;
+  Int line;
+
+  Location() {}
+  Location(const std::string _name, const std::string _file, Int _line)
+    :  name(_name), filename(_file), line(_line)
+  { }
+
+  friend bool operator<(const Location& lhs, const Location& rhs)
+  {
+    if(lhs.line < rhs.line) return true;
+    if(lhs.line > rhs.line) return false;
+    if(lhs.name < rhs.name) return true;
+    if(lhs.name > rhs.name) return false;
+    if(lhs.filename < rhs.filename) return true;
+    if(lhs.filename > rhs.filename) return false;
+
+    return false;
+  }
+};
+
+namespace GAPdetail {
+template<>
+struct GAP_maker<Location>
+{
+  Obj operator()(const Location& f)
+  {
+    GAPRecord r;
+    r.set("line", f.line);
+    r.set("filename", f.filename);
+    return r.raw_obj();
+  }
+};
+}
+
 FullFunction buildFunctionName(const JsonParse& jp)
 { return FullFunction(jp.Fun, jp.File, jp.Line, jp.EndLine); }
 
@@ -208,6 +246,7 @@ try{
     bool firstExec = true;
 
     std::map<Int, std::string> filename_map;
+    std::map<std::string, Int> filename_map_inverse;
 
     std::map<Int, std::set<Int> > read_lines;
     std::map<Int, std::map<Int, Int> > exec_lines;
@@ -215,6 +254,7 @@ try{
     std::map<Int, std::map<Int, Int> > runtime_with_children_lines;
 
     std::map<Int, std::map<Int, std::set<FullFunction> > > called_functions;
+    std::map<Int, std::map<Int, std::set<Location> > > calling_functions;
     StackTrace stacktrace;
     stacktrace.setupChildren();
     StackTrace* current_stack = &stacktrace;
@@ -271,13 +311,23 @@ try{
                            "Use ConcatenateLineByLineProfiles",0,0); break;
             }
             filename_map[ret.FileId] = ret.File;
+            filename_map_inverse[ret.File] = ret.FileId;
           break;
           case IntoFun:
           {
+            FullFunction retfunc = buildFunctionName(ret);
             // Record which line called this function
-            called_functions[calling_exec.FileId][calling_exec.Line].insert(buildFunctionName(ret));
+            called_functions[calling_exec.FileId][calling_exec.Line].insert(retfunc);
+            // Record we called this function from here
+            if(!function_stack.empty()) {
+              // This '!= 0' is to support older GAP's which don't provide this field
+              if(ret.FileId != 0) {
+                std::string filename = function_stack.back().filename;
+                calling_functions[ret.FileId][ret.Line].insert(Location(filename, filename_map[calling_exec.FileId], calling_exec.Line));
+              }
+            }
             // Add this function to the stack of executing functions
-            function_stack.push_back(buildFunctionName(ret));
+            function_stack.push_back(retfunc);
             // And to stack of executed files/line numbers
             line_stack.push_back(calling_exec);
             // We also store the amount of time spent in this stack as well.
@@ -366,6 +416,7 @@ try{
     std::vector<std::pair<std::string, std::vector<std::vector<Int> > > > read_exec_data;
 
     std::vector<std::pair<std::string, std::vector<std::set<FullFunction> > > > called_functions_ret;
+    std::vector<std::pair<std::string, std::vector<std::set<Location> > > > calling_functions_ret;
 
     // First gather all used filenames
     std::set<Int> filenameids;
@@ -390,6 +441,7 @@ try{
       std::map<Int,Int>& runtime = runtime_lines[*it];
       std::map<Int,Int>& runtime_children = runtime_with_children_lines[*it];
       std::map<Int, std::set<FullFunction> >& functions = called_functions[*it];
+      std::map<Int, std::set<Location> >& functions_calling = calling_functions[*it];
 
       Int max_line = 0;
       if(!read_set.empty())
@@ -407,8 +459,12 @@ try{
       if(!functions.empty())
         max_line = std::max(max_line, functions.rbegin()->first);
 
+      if(!functions_calling.empty())
+        max_line = std::max(max_line, functions_calling.rbegin()->first);
+
       std::vector<std::vector<Int> > line_data;
       std::vector<std::set<FullFunction> > called_data;
+      std::vector<std::set<Location> > calling_data;
       for(int i = 1; i <= max_line; ++i)
       {
         std::vector<Int> data;
@@ -419,6 +475,7 @@ try{
         line_data.push_back(data);
 
         called_data.push_back(functions[i]);
+        calling_data.push_back(functions_calling[i]);
       }
 
       if(filename_map.count(*it) == 0)
@@ -429,6 +486,7 @@ try{
       {
         read_exec_data.push_back(std::make_pair(filename_map[*it], line_data));
         called_functions_ret.push_back(std::make_pair(filename_map[*it], called_data));
+        calling_functions_ret.push_back(std::make_pair(filename_map[*it], calling_data));
       }
     }
 
@@ -443,6 +501,7 @@ try{
     r.set("line_info", read_exec_data);
     r.set("stack_runtimes", function_stack_runtimes);
     r.set("line_function_calls", called_functions_ret);
+    r.set("line_calling_function_calls", calling_functions_ret);
     r.set("info", info);
 
     return GAP_make(r);

@@ -146,11 +146,42 @@ _prof_LookupWithDefault := function(dict, val, default)
     fi;
 end;
 
-#############################################################################
-##
-##
 
-##
+
+# Returns a list of records containing:
+# [function, time in func+children, time in func, calls]
+_Prof_GatherFunctionUsage := function(data)
+  local funccollection, trace, lastfunc, funcset, pos, f;
+
+  if not(IsRecord(data)) then
+    data := ReadLineByLineProfile(data);
+  fi;
+
+  funccollection := [];
+
+  for trace in data.stack_runtimes do
+    if(Length(trace[1]) > 0) then
+      lastfunc := trace[1][Length(trace[1])];
+      funcset := Set(trace[1]);
+      for f in funcset do
+        # Use the fact that [f,0,0,0] will be put in the same place as [f,x,y] for x>=0, y>=0
+        pos := PositionSorted(funccollection, [f, 0, 0, 0]);
+        if Length(funccollection) < pos or funccollection[pos][1] <> f then
+          AddSet(funccollection, [f, 0, 0, 0]);
+          pos := PositionSet(funccollection, [f, 0, 0, 0]);
+        fi;
+        funccollection[pos][2] := funccollection[pos][2] + trace[2];
+        if f = lastfunc then
+          funccollection[pos][3] := funccollection[pos][3] + trace[2];
+          funccollection[pos][4] := funccollection[pos][4] + 1;
+        fi;
+      od;
+    fi;
+  od;
+
+    return funccollection;
+end;
+
 InstallGlobalFunction("OutputFlameGraphInput",function(args...)
   local outstream, trace, fun, firstpass, data, filename, retstring;
   if Length(args) < 1 or Length(args) > 2 then
@@ -193,6 +224,8 @@ InstallGlobalFunction("OutputFlameGraphInput",function(args...)
     return retstring;
   fi;
 end);
+
+
 
 InstallGlobalFunction("OutputFlameGraph", function(args...)
   local instr, instream, outstr, outstream;
@@ -303,7 +336,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           infile, outname, instream, outstream, line, allLines,
           counter, overview, i, fileinfo, filenum, callinfo, calledbyinfo,
           readlineset, execlineset, outchar,
-          outputhtml, outputoverviewhtml, stringWithSeparators,
+          outputhtml, outputoverviewhtml, outputfunctablehtml,
+          stringWithSeparators,
           warnedExecNotRead, filebuf, fileview, flame;
 
     if Length(arg) < 2 or Length(arg) > 3 then
@@ -368,6 +402,38 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
         fi;
       od;
       return Reversed( withSeps );
+    end;
+
+    outputfunctablehtml := function(outstream)
+      local funcusage, line, fn, linkname,name;
+
+      funcusage := _Prof_GatherFunctionUsage(data);
+      PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
+      PrintTo(outstream, "<style>");
+      PrintTo(outstream, _prof_CSS_std);
+      PrintTo(outstream,"<\style>");
+      PrintTo(outstream, "<table class=\"sortable\">\n");
+
+      PrintTo(outstream, "<thead>");
+      PrintTo(outstream, "<tr>");
+      PrintTo(outstream, "<th>Func</th><th>Execs</th><th>Time</th><th>Time+Childs</th>\n");
+      PrintTo(outstream, "</tr>");
+      PrintTo(outstream, "</thead>\n");
+      
+      PrintTo(outstream, "<tbody>\n");
+      for line in funcusage do
+        fn := line[1];
+        PrintTo(outstream, "<tr><td>");
+        linkname := ReplacedString(fn.filename, "/", "_");
+        Append(linkname, ".html");
+        name := fn.name;
+        if name = "nameless" then
+          name := Concatenation(fn.filename, ":", String(fn.line));
+        fi;
+        PrintTo(outstream, "<a href=\"",linkname,"#line",String(fn.line),"\">",name,"</a> ");
+        PrintTo(outstream, "</td><td>",line[4], "</td><td>", line[3], "</td><td>", line[2], "</td></tr>\n");
+      od;
+      PrintTo(outstream, "</tbody></table></body></html>\n");
     end;
 
     outputhtml := function(lines, fileinfo, subfunctions, calledbyfunctions, outstream)
@@ -481,7 +547,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream, "</table></body></html>\n");
     end;
 
-    outputoverviewhtml := function(overview, outdir, haveflame)
+    outputoverviewhtml := function(overview, outdir, havetime)
       local filename, outstream, codecover, i, any_timeexec;
 
       Sort(overview, function(v,w) return v.inname < w.inname; end);
@@ -495,8 +561,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream, "<style>");
       PrintTo(outstream, Concatenation(_prof_CSS_std, _prof_CSS_overview));
       PrintTo(outstream, "</style>");
-      if haveflame then
+      if havetime then
         PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
+        PrintTo(outstream, """<p><a href="funcoverview.html">Function Overview</a></p>""");
       fi;
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
         "<thead><tr><th>File</th><th>Coverage%</th><th>Executed Lines</th><th>Total Lines</th>");
@@ -614,8 +681,15 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
     PrintTo(outstream, filebuf);
     CloseStream(outstream);
 
+
     if ForAny(overview, x -> IsBound(x.filetime) and x.filetime > 0) then
       OutputFlameGraph(data, Concatenation(outdir, "/flame.svg"));
+
+      outstream := OutputTextFile(Concatenation(outdir, "/funcoverview.html"), false);
+      SetPrintFormattingStatus(outstream, false);
+      outputfunctablehtml(outstream);
+      CloseStream(outstream);
+
       outputoverviewhtml(overview, outdir, true);
     else
       outputoverviewhtml(overview, outdir, false);

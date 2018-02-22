@@ -16,6 +16,7 @@ enum ArgType {
   arg_Type,
   arg_Line,
   arg_Ticks,
+  arg_Execs,
   arg_FileId,
   arg_Version,
   arg_IsCover,
@@ -42,6 +43,8 @@ ArgType getArgType(const char *str, SizeType length) {
   if (length == 5) {
     if (strncmp(str, "Ticks", 5) == 0)
       return arg_Ticks;
+    if (strncmp(str, "Execs", 5) == 0)
+      return arg_Execs;
   }
 
   if (length == 6) {
@@ -101,9 +104,9 @@ struct MessageHandler {
     switch (name_) {
 #define FILL_INT(x) case arg_##x: jp->x = i; break;
     case arg_Version:
-      if (i > 1) {
+      if (i > 2) {
         ErrorMayQuit("This version of the 'profiling' package is too old "
-                     "to read this file (only accepts version 1, this file"
+                     "to read this file (only accepts version 1 or 2, this file"
                      " is version %d)",
                      (int)i, 0);
       }
@@ -112,6 +115,7 @@ struct MessageHandler {
       FILL_INT(Line);
       FILL_INT(EndLine);
       FILL_INT(Ticks);
+      FILL_INT(Execs);
     default:
       DEBUG_OUT("!I:" << name_ << ":" << i);
       return false;

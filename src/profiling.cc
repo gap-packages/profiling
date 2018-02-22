@@ -24,17 +24,24 @@ ProfType CharToProf(char c)
 
 struct JsonParse
 {
+  // Type of line
   ProfType Type;
+  // Name of function (for function start/end)
   std::string Fun;
+  // Time spent on line
   int Ticks;
+  // Number of line executed (1 is ommitted from JSON)
+  int Execs;
+  // Line executed
   int Line;
+  // End line of function (for function start)
   int EndLine;
   std::string File;
   int FileId;
 
   bool IsCover;
   std::string TimeType;
-  JsonParse() : Type(InvalidType), Ticks(0), Line(-1), EndLine(-1), FileId(-1),
+  JsonParse() : Type(InvalidType), Ticks(0), Execs(1), Line(-1), EndLine(-1), FileId(-1),
                 IsCover(false)
     { }
 };
@@ -372,7 +379,7 @@ try{
           }
           else
           {
-            exec_lines[ret.FileId][ret.Line]++;
+            exec_lines[ret.FileId][ret.Line]+=ret.Execs;
             if(firstExec)
               firstExec = false;
             else

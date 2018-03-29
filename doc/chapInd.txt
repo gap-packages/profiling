@@ -2,13 +2,13 @@
   
   [1XIndex[101X
   
-  [2XLineByLineProfileFunction[102X  1.1-7
-  [2XMergeLineByLineProfiles[102X  1.1-2
-  [2XOutputAnnotatedCodeCoverageFiles[102X  1.1-5
-  [2XOutputFlameGraph[102X  1.1-3
-  [2XOutputFlameGraphInput[102X  1.1-4
-  [2XOutputJsonCoverage[102X  1.1-6
-  [2XReadLineByLineProfile[102X  1.1-1
+  [2XLineByLineProfileFunction[102X 1.1-7 
+  [2XMergeLineByLineProfiles[102X 1.1-2 
+  [2XOutputAnnotatedCodeCoverageFiles[102X 1.1-5 
+  [2XOutputFlameGraph[102X 1.1-3 
+  [2XOutputFlameGraphInput[102X 1.1-4 
+  [2XOutputJsonCoverage[102X 1.1-6 
+  [2XReadLineByLineProfile[102X 1.1-1 
   
   
   -------------------------------------------------------

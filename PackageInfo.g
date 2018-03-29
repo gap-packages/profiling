@@ -10,8 +10,8 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "1.3.0",
-Date := "23/02/2017", # dd/mm/yyyy format
+Version := "2.0.0",
+Date := "29/03/2018", # dd/mm/yyyy format
 
 Persons := [
   rec(
@@ -30,7 +30,7 @@ Persons := [
   ),
 ],
 
-PackageWWWHome := "http://gap-packages.github.io/profiling/",
+PackageWWWHome := "https://gap-packages.github.io/profiling/",
 
 ArchiveURL     := Concatenation("https://github.com/gap-packages/profiling/",
                                 "releases/download/v", ~.Version,

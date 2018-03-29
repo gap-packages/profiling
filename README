@@ -39,3 +39,9 @@ is located.
 
 ./configure --with-gaproot=<location of GAP root>
 make
+
+Building from git
+-----------------
+
+If you are building from a git checkout from github, then run
+./autogen.sh before running ./configure

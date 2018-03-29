@@ -1,3 +1,10 @@
+2.0.0
+=====
+
+* Improved performance
+* Show where functions were called from
+* Output a general overview page
+
 1.3.0
 =====
 

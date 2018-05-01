@@ -22,6 +22,12 @@ matrix:
         apt_packages:
          - libgmp-dev
     - os: linux
+      env: BRANCH=stable-4.9
+      compiler: gcc
+      addons:
+        apt_packages:
+         - libgmp-dev
+    - os: linux
       env: BRANCH=stable-4.8
       compiler: gcc
       addons:

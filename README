@@ -25,8 +25,8 @@ to compile and run 'profiling'.
 
 This package also requires a C++ compiler (typically clang++ or g++)
 
-Instructions
-------------
+Build Instructions For Release
+------------------------------
 
 The package should be built using the commands:
 
@@ -40,8 +40,10 @@ is located.
 ./configure --with-gaproot=<location of GAP root>
 make
 
-Building from git
------------------
+Building from git / the github repository
+-----------------------------------------
 
 If you are building from a git checkout from github, then run
-./autogen.sh before running ./configure
+./autogen.sh
+./configure
+make

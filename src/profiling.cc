@@ -335,6 +335,11 @@ try{
             }
             // Add this function to the stack of executing functions
             function_stack.push_back(retfunc);
+
+            static int deepest_depth = 0;
+            if(function_stack.size() > deepest_depth) {
+              deepest_depth = function_stack.size();
+            }
             // And to stack of executed files/line numbers
             line_stack.push_back(calling_exec);
             // We also store the amount of time spent in this stack as well.
@@ -363,7 +368,7 @@ try{
                 runtime_with_children_lines[calling_exec.FileId][calling_exec.Line] =
                   ts.runtime_with_children + (total_ticks - ts.total_ticks) -
                     (runtime_lines[calling_exec.FileId][calling_exec.Line] - ts.runtime);
-
+                function_stack.pop_back();
                 line_stack.pop_back();
                 line_times_stack.pop_back();
             }
@@ -518,6 +523,52 @@ try{
 return Fail;
 }
 
+Obj HTMLEncodeString(Obj self, Obj param)
+{
+  if(!IS_STRING_REP(param))
+  {
+    ErrorMayQuit("<arg> must satisfy IsStringRep",0L,0L);
+  }
+
+  Int len = GET_LEN_STRING(param);
+  Char* ptr = CSTR_STRING(param);
+  // Make long enough there is no chance a
+  // resize will be needed.
+  Obj outstring = NEW_STRING(len * 6);
+  Char* outptr = CSTR_STRING(outstring);
+  Int outpos = 0;
+  for(Int i = 0; i < len; ++i)
+  {
+    switch(ptr[i]) {
+      case '&':
+        outptr[outpos++] = '&';
+        outptr[outpos++] = 'a';
+        outptr[outpos++] = 'm';
+        outptr[outpos++] = 'p';
+        outptr[outpos++] = ';';
+        break;
+      case '<':
+        outptr[outpos++] = '&';
+        outptr[outpos++] = 'l';
+        outptr[outpos++] = 't';
+        outptr[outpos++] = ';';
+        break;
+      case ' ':
+        outptr[outpos++] = '&';
+        outptr[outpos++] = 'n';
+        outptr[outpos++] = 'b';
+        outptr[outpos++] = 's';
+        outptr[outpos++] = 'p';
+        outptr[outpos++] = ';';
+        break;
+      default:
+        outptr[outpos++] = ptr[i];
+    }
+  }
+  SET_LEN_STRING(outstring, outpos);
+  SHRINK_STRING(outstring);
+  return outstring;
+}
 
 typedef Obj (* GVarFuncTypeDef)(/*arguments*/);
 
@@ -530,6 +581,7 @@ typedef Obj (* GVarFuncTypeDef)(/*arguments*/);
 // Table of functions to export
 static StructGVarFunc GVarFuncs [] = {
     GVAR_FUNC_TABLE_ENTRY("profiling.c",READ_PROFILE_FROM_STREAM, 2, "param, param2"),
+    GVAR_FUNC_TABLE_ENTRY("profiling.c",HTMLEncodeString, 1, "param"),
 
 	{ 0 } /* Finish with an empty entry */
 

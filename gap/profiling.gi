@@ -428,8 +428,12 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream, "</tbody></table></body></html>\n");
     end;
 
-    outputhtml := function(lines, fileinfo, subfunctions, calledbyfunctions, outstream)
-      local i, outchar, time, calls, calledfns, linkname, fn, name, filebuf, coverage, hasTiming, hasCoverage, funcs;
+    outputhtml := function(lines, fileinfo, subfunctions, calledbyfunctions, outfilestream)
+      local i, outchar, time, calls, calledfns, linkname, fn, name, filebuf, coverage, hasTiming, hasCoverage, funcs, outstream, outstring;
+      outstring := "";
+      outstream := OutputTextString(outstring, false);
+      SetPrintFormattingStatus(outstream, false);
+
       hasTiming := _prof_fileHasTiming(fileinfo);
       hasCoverage := _prof_fileHasCoverage(fileinfo);
       coverage := fileinfo[2];
@@ -537,6 +541,9 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
       PrintTo(outstream, "</tbody>\n");
       PrintTo(outstream, "</table></body></html>\n");
+
+      CloseStream(outstream);
+      PrintTo(outfilestream, outstring);
     end;
 
     outputoverviewhtml := function(overview, outdir, havetime)

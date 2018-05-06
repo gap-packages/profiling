@@ -57,7 +57,6 @@ if failedtest then
     Print("A test failed!\n");
     FORCE_QUIT_GAP(1);
 else
-    Print("I need to print a stupid message to make the automated tester happy\n");
-    Print("#I  No errors detected while testing");
-    FORCE_QUIT_GAP(0);
+    Print("#I  No errors detected while testing\n");
+    QUIT_GAP(0);
 fi;

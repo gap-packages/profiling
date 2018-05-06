@@ -321,14 +321,6 @@ _prof_fileHasCoverage := fileinfo -> not ForAny(fileinfo[2], x -> (x[1] = 0 and 
 # Checks if file has any timing attached to it
 _prof_fileHasTiming := fileinfo -> ForAny(fileinfo[2], x -> (x[3] > 0));
 
-_prof_encodeHTML := function(s)
-    local str;
-    str := String(s);
-    str := ReplacedString(str, "&", "&amp;");
-    str := ReplacedString(str, "<", "&lt;");
-    str := ReplacedString(str, " ", "&nbsp;");
-    return str;
-end;
 
 ##
 InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
@@ -510,7 +502,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
         fi;
         
-        PrintTo(outstream, "<td><span><tt>", _prof_encodeHTML(lines[i]), "</tt></span></td>");
+        PrintTo(outstream, "<td><span><tt>", HTMLEncodeString(lines[i]), "</tt></span></td>");
 
         if hasTiming then
             # totaltime := LookupWithDefault(linedict.recursetime, i, "");

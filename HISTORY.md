@@ -1,3 +1,10 @@
+2.0.1
+=====
+
+* Further performance improvements
+* Fix memory leak which tended to cause crashes with very large profiles
+* Update how we find GMP (should not effect users)
+
 2.0.0
 =====
 

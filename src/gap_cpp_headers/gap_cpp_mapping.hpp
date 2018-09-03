@@ -379,8 +379,9 @@ struct GAP_maker<std::string>
     Obj operator()(const std::string& s) const
     {
       Obj o;
-      const char* c = s.c_str();
-      C_NEW_STRING_DYN(o, c);
+      size_t len = s.length();
+      o = NEW_STRING(len);
+      memcpy(CHARS_STRING(o), s.c_str(), len);
       return o;
     }
 };

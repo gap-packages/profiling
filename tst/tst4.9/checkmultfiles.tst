@@ -28,9 +28,20 @@ gap> Length(file);
 1
 gap> datapos := PositionProperty(filenames, x -> EndsWith(x, "testcode1.g"));;
 gap> data := x.line_info[datapos];;
-gap> data[2] = [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ],
->                [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ],
+gap> hasInterpreterProfiling := IsBound(GAPInfo.KernelInfo.KERNEL_API_VERSION) and 
+>          GAPInfo.KernelInfo.KERNEL_API_VERSION >= 4000;;
+gap> if hasInterpreterProfiling then
+>  profData := [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ],
+>                [ 1, 3, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ],
 >                [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ], 
+>                [ 1, 0, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 3, 0, 0 ], [ 1, 2, 0, 0 ],
+>                [ 1, 1, 0, 0 ] ];
+> else
+>  profData := [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ],
+>                [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ],
+>                [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ],
 >                [ 1, 0, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 3, 0, 0 ], [ 1, 2, 0, 0 ] ];
+> fi;;
+gap> data[2] = profData;
 true
 gap> STOP_TEST("checkmultfiles.tst", 1);

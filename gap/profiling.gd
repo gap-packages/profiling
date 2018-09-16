@@ -4,6 +4,10 @@
 # Declarations
 #
 
+#! @Chapter Functionality provided by the &profiling; package
+
+#! @Section Reading line-by-line profiles
+
 #! @Arguments filename
 #! @Description
 #!   Read <A>filename</A>, a line by line profile which was previously generated
@@ -22,6 +26,10 @@ DeclareGlobalFunction( "ReadLineByLineProfile" );
 DeclareGlobalFunction( "MergeLineByLineProfiles" );
 
 
+
+#! @Section Generating flame graphs
+#!
+#! A 'flame graph' is a method of visualising where time is spent by a program.
 
 
 #! @Arguments codecover [, filename]
@@ -48,6 +56,9 @@ DeclareGlobalFunction("OutputFlameGraph");
 #!   The flame graph input will be written to <A>filename</A> (or returned as a
 #!   string if <A>filename</A> is not present).
 DeclareGlobalFunction("OutputFlameGraphInput");
+
+
+#! @Section Generating coverage reports
 
 #! @Arguments codecover, [indir,] outdir
 #! @Description
@@ -77,6 +88,8 @@ DeclareGlobalFunction("OutputAnnotatedCodeCoverageFiles");
 #!   The output will be written to the file <A>outfile</A>.
 #!   <P/>
 DeclareGlobalFunction("OutputJsonCoverage");
+
+#! @Section Miscellaneous
 
 #! @Arguments function, arguments
 #! @Description

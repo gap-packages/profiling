@@ -1,0 +1,76 @@
+@Chapter Tutorial
+
+@Section Line By Line Profiling
+
+The purpose of this section is to show how to use &GAP;'s line-by-line profiler / code coverage. For this, you need &GAP; 4.8 or newer.
+
+Do you just care which lines of code are executed? Then you should switch to the coverage guide (these two guides are very similar!)
+
+We will start with a quick guide to profiling, with some brief comments. We will explain later how to do these things in greater depth!
+
+Let's start with some code we want to profile. Here I am going to profile the function <C>f</C> given below, and use a group from the <Package>AtlasRep</Package> package.
+
+<Listing><![CDATA[
+LoadPackage("atlasrep");
+a := AtlasGroup("U6(2)", NrMovedPoints, 12474);
+b := a^(1,2,3);
+f := function() Intersection(a,b); end;
+]]></Listing>
+
+Firstly, we will record a profile of a function <C>f</C>:
+
+<Listing><![CDATA[
+# Code between ProfileLineByLine and UnprofileLineByLine is recorded
+# to a file output.gz
+ProfileLineByLine("output.gz"); f(); UnprofileLineByLine();
+]]></Listing>
+
+You should write this all on a single line in &GAP;, as profiling records the real time spent executing code, so time spent typing commands will be counted.
+
+This creates a file called <F>output.gz</F>, which stores the result of running <C>f</C>. Now we want to turn that into a nice output. This requires loading the &profiling; package, like this:
+
+<Listing><![CDATA[
+LoadPackage("profiling");
+OutputAnnotatedCodeCoverageFiles("output.gz", "outdir");
+]]></Listing>
+
+If loading the &profiling; package produces errors, make sure you have compiled both the &profiling; and <Package>IO</Package> packages.
+
+<Ref Func="OutputAnnotatedCodeCoverageFiles"/> reads the previously created <F>output.gz</F> and produces HTML output into the directory <F>outdir</F>.
+
+You must view the result of your profiling in a web-browser outside of &GAP;. Open <F>index.html</F> from the <F>outdir</F> directory in the web browser of your choice to see what happened.
+
+At the very top is a link to a flame graph. These give a quick overview of this functions took the most time. Functions are stacked, so lower functions call higher functions.
+
+From this graph we can see that <C>f</C> called <Ref Func="Intersection" BookName="ref"/>, which called a function without a name at line 2942 in <F>stbcbckt.gi</F>. This function spent most of its time in <C>PartitionBacktrack</C>, and a little time in <C>Stabilizer</C>.
+
+Whenever you generate a profile which contains timing information, a flame graph link will be show on the first page of your generated profile!
+
+
+@Section FAQ / Problems
+
+* <Ref Func="ProfileLineByLine" BookName="ref"/> records wall (also known as clock) time which happens between <Ref Func="ProfileLineByLine" BookName="ref"/> and the next <Ref Func="UnprofileLineByLine" BookName="ref"/>. This is why we put starting profiling, our code, and then stopping profile on a single line.
+
+* If you want to profile how long everything in &GAP; takes, including the startup, then you can given the command line option <C>--prof filename</C> when starting &GAP;. This is equivalent to &GAP; calling <C>ProfileLineByLine("filename");</C> before loading any of the standard library (obviously, give your own filename).
+
+* Giving your output file the <C>gz</C> extension makes &GAP; automatically compress the file. This is a great idea, because the files can get very big otherwise! Even then, the files can grow quite large very quickly, keep an eye on them.
+
+* <Ref Func="ProfileLineByLine" BookName="ref"/> takes an optional second argument which is a record, which can set some configuration options. Here are some of the options.
+
+* <C>wallTime</C>: Boolean (defaults to true). Sets if time should be measured using wall-clock time (true) or CPU time (false). Measuring CPU-time has a higher overhead, so avoid it if at all possible!
+
+* <C>resolution</C>: Integer (defaults to 0). By default &GAP; will record a trace of all executed code. When non-zero, &GAP; instead samples which piece of code is being executed every <C>resolution</C> nanoseconds. Setting this to a non-zero value improves performance and produces smaller traces, at the cost of accuracy. &GAP; will still accurately record which statements are executed at least once. This is mainly useful when you wish to consider very ling running code.
+
+
+@Section Function-Based Profiling
+
+Sometimes you will have code that just runs too long to easily profile line by line. You can profile this in &GAP; older function-based profiler. You can read more about this profiler in &GAP;'s documentation, but here is a quick example to get you going!
+
+<Listing><![CDATA[
+ProfileGlobalFunctions(true);
+ProfileOperationsAndMethods(true);
+f();
+ProfileGlobalFunctions(false);
+ProfileOperationsAndMethods(false);
+DisplayProfile();
+]]></Listing>

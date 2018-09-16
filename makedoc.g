@@ -7,7 +7,9 @@ if fail = LoadPackage("AutoDoc", ">= 2016.01.21") then
     Error("AutoDoc 2016.01.21 or newer is required");
 fi;
 
-AutoDoc( rec( scaffold := true, autodoc := true ) );
+AutoDoc( rec( scaffold := true,
+            autodoc := rec( files := [ "doc/tutorial.autodoc" ] ),
+) );
 
 PrintTo("VERSION", GAPInfo.PackageInfoCurrent.Version);
 

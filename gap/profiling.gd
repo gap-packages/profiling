@@ -114,3 +114,37 @@ DeclareGlobalFunction("OutputCoverallsJsonCoverage");
 #!   browser.
 #!   <P/>
 DeclareGlobalFunction("LineByLineProfileFunction");
+
+#! @Arguments file[, opts]
+#! @Returns
+#!   a string
+#! @Description
+#!   Tests the file with name <A>file</A> in another GAP session, and produces a
+#!   code coverage report of lines that were executed in the process.  If
+#!   <A>file</A> ends with <C>.tst</C> it will be called with <C>Test</C>;
+#!   otherwise, it will be run directly.
+#!
+#!   The optional argument <A>opts</A> should be a record, and may contain any
+#!   of the following components:
+#!     * <C>outdir</C>: a string denoting the directory into which the HTML
+#!       files of the report will be placed (a temporary directory by default);
+#!     * <C>indir</C>: a string such that only file paths beginning with
+#!       <C>indir</C> will be profiled (default <C>""</C>);
+#!     * <C>showOutput</C>: a boolean denoting whether to print test output to
+#!       the screen (default <C>true</C>);
+#!     * <C>open</C>: a boolean denoting whether to open the report in a web
+#!       browser on completion (default <C>false</C>).
+#!
+#!   This function returns the location of an HTML file containing the report.
+DeclareGlobalFunction("ProfileFile");
+
+#! @Arguments pkg_name[, opts]
+#! @Returns
+#!   a string
+#! @Description
+#!   If <A>pkg_name</A> is the name of an installed package, then this function
+#!   runs that package's test suite and produces a report on the code coverage
+#!   of files inside the package.  The string returned denotes the location of
+#!   an HTML file containing the report.  The optional argument <A>opts</A>
+#!   behaves the same as in <Ref Func = "ProfileFile"/>.
+DeclareGlobalFunction("ProfilePackage");

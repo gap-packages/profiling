@@ -892,3 +892,102 @@ InstallGlobalFunction("LineByLineProfileFunction",
     fi;
   end);
 
+InstallGlobalFunction("ProfileFile",
+function(testfile, args...)
+  local opts, indir, showOutput, open, rnam, rawfile, redirect, len, gap_cmd,
+        cmd, x, page;
+  # Get options
+  opts := rec(outdir := DirectoryTemporary(),
+              indir := "",
+              showOutput := true,
+              open := false);
+  if Length(args) = 1 then
+    if not IsRecord(args[1]) then
+      ErrorNoReturn("ProfileFile: <opts> must be a record");
+    fi;
+    for rnam in RecNames(args[1]) do
+      opts.(rnam) := args[1].(rnam);
+    od;
+  elif Length(args) > 1 then
+    ErrorNoReturn("ProfileFile: takes 1 or 2 arguments, but ",
+                  Length(args) + 1, " were given");
+  fi;
+
+  # Gather data
+  rawfile := Filename(opts.outdir, "raw.json");
+  if opts.showOutput = true then
+    redirect := "";
+  else
+    redirect := "> /dev/null 2>&1";
+  fi;
+  len := Length(testfile);
+  gap_cmd := GAPInfo.KernelInfo.COMMAND_LINE[1];
+  if testfile{[len-3 .. len]} = ".tst" then
+    cmd := StringFormatted("""
+gapinput="Test(\"{}\"); quit;"
+{} --quitonbreak -a 500M -m 500M -A -q --cover {} {} <<EOF
+$gapinput
+EOF
+    """, testfile, gap_cmd, rawfile, redirect);
+  else
+    cmd := StringFormatted("""
+{} --quitonbreak -a 500M -m 500M -A -q --cover {} {} {} <<EOF
+quit; quit;
+EOF
+    """, gap_cmd, rawfile, testfile, redirect);
+  fi;
+  Exec(cmd);
+
+  # Process profile
+  x := ReadLineByLineProfile(rawfile);;
+  OutputAnnotatedCodeCoverageFiles(x, opts.indir, opts.outdir);
+  page := Filename(opts.outdir, "index.html");
+
+  # Open page
+  if opts.open = true then
+    if ARCH_IS_MAC_OS_X() then
+      Exec(Concatenation("open ", page));
+    elif ARCH_IS_WINDOWS() then
+      Exec(Concatenation("cmd /c start ", page));
+    else
+      Exec(Concatenation("xdg-open ", page));
+    fi;
+  fi;
+
+  return page;
+end);
+
+InstallGlobalFunction("ProfilePackage",
+function(pkg_name, args...)
+  local info, dir, testfile, opts, rnam;
+  # Check input
+  if Length(args) = 0 then
+    args := [rec()];
+  elif Length(args) > 1 then
+    ErrorNoReturn("ProfilePackage: takes 1 or 2 arguments, but ",
+                  Length(args) + 1, " were given");
+  fi;
+
+  # Get test location from package info
+  info := PackageInfo(pkg_name);
+  if Length(info) = 0 then
+    return fail;
+  fi;
+  if not IsBound(info[1].TestFile) then
+    ErrorNoReturn("ProfilePackage: no test file specified in package");
+  fi;
+  dir := info[1].InstallationPath;
+  testfile := Filename(Directory(dir), info[1].TestFile);
+  if Length(info) >= 2 then
+    Info(InfoWarning, 1, "ProfilePackage: \"", pkg_name,
+         "\" installed in two locations");
+    Info(InfoWarning, 1, "ProfilePackage: using ", dir, " . . .");
+  fi;
+
+  # Call ProfileFile with the correct options
+  opts := rec(indir := dir);
+  for rnam in RecNames(args[1]) do
+    opts.(rnam) := args[1].(rnam);
+  od;
+  return ProfileFile(testfile, opts);
+end);

@@ -89,6 +89,22 @@ DeclareGlobalFunction("OutputAnnotatedCodeCoverageFiles");
 #!   <P/>
 DeclareGlobalFunction("OutputJsonCoverage");
 
+#! @Arguments cover, outfile, jobid, pathtoremove
+#! @Description
+#!   Takes a previously generated profile and outputs a json coverage file which is
+#!   accepted by coveralls.io.
+#!   <P/>
+#!   <A>cover</A> should either be a profile previously read by
+#!   <F>ReadLineByLineProfile</F>, or the filename of a profile which will first
+#!   be read with <F>ReadLineByLineProfile</F>.
+#!   <A>jobid</A> A string containing the travis jobid. We only support travis-ci at the moment.
+#!   <A>pathtoremove</A> the path to the tested repository;
+#!   this path will be removed from all filenames.
+#!   <P/>
+#!   The output will be written to the file <A>outfile</A>.
+#!   <P/>
+DeclareGlobalFunction("OutputCoverallsJsonCoverage");
+
 #! @Section Miscellaneous
 
 #! @Arguments function, arguments

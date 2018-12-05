@@ -695,6 +695,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
     fi;
 end);
 
+# Outputs JSON for consumption by codecov.io
 InstallGlobalFunction(OutputJsonCoverage,
 function(data, outfile)
     local outstream, lineinfo, prev, file, lines;
@@ -734,6 +735,73 @@ function(data, outfile)
         fi;
     od;
     IO_Write(outstream, "} }");
+    IO_Close(outstream);
+end);
+
+# Outputs JSON for consumption by coveralls
+InstallGlobalFunction(OutputCoverallsJsonCoverage,
+function(data, outfile, jobid, pathtoremove)
+    local outstream, lineinfo, prev, file, lines, md5sum, md5path, md5cmd_full;
+
+    md5path := DirectoriesSystemPrograms();
+    md5cmd_full := Filename( md5path, "md5sum" );
+    if md5cmd_full = fail then
+        Error("Could not locate 'md5sum' in your PATH");
+    fi;
+    md5sum := function(filename)
+        local stdout, res, str;
+        str := "";
+        stdout := OutputTextString(str, false);
+        res := Process( DirectoryCurrent(), md5cmd_full
+                      , InputTextNone(), stdout, [ filename ] );
+        if res <> 0 then
+            Error("failed to execute md5sum program");
+        fi;
+        return SplitString(str, " ")[1];
+    end;
+
+    outfile := UserHomeExpand(outfile);
+    outstream := IO_File(outfile, "w");
+
+    if not(IsRecord(data)) then
+        data := ReadLineByLineProfile(data);
+    fi;
+
+    lineinfo := function(lineno, stat)
+        if stat[1] > 0 then
+            return String(stat[2]);
+        else
+            return "null";
+        fi;
+        return "";
+    end;
+
+    IO_Write(outstream, "{\n");
+    IO_Write(outstream, Concatenation("\"service_job_id\": \"", jobid, "\",\n"));
+    IO_Write(outstream, "\"service_name\": \"travis-ci\",\n");
+    IO_Write(outstream, "\"source_files\": [\n");
+    prev := false;
+
+    for file in data.line_info do
+        if file[1] <> "stream" then
+            if prev then
+                IO_Write(outstream, ",\n");
+            fi;
+            IO_Write(outstream, "{\n");
+            IO_Write(outstream, Concatenation( "\"name\": \""
+                                             , ReplacedString(file[1], pathtoremove, "")
+                                             , "\",\n" ));
+            IO_Write(outstream, Concatenation("\"source_digest\": \""
+                                             , md5sum(file[1]) ,"\",\n"));
+            IO_Write(outstream, "\"coverage\": [");
+
+            lines := List([1..Length(file[2])], n -> lineinfo(n, file[2][n]));
+            IO_Write(outstream, JoinStringsWithSeparator(lines, ", "));
+            IO_Write(outstream, "]\n}\n");
+            prev := true;
+        fi;
+    od;
+    IO_Write(outstream, "] }");
     IO_Close(outstream);
 end);
 

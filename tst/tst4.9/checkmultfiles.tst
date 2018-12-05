@@ -28,9 +28,17 @@ gap> Length(file);
 1
 gap> datapos := PositionProperty(filenames, x -> EndsWith(x, "testcode1.g"));;
 gap> data := x.line_info[datapos];;
-gap> hasInterpreterProfiling := IsBound(GAPInfo.KernelInfo.KERNEL_API_VERSION) and 
->          GAPInfo.KernelInfo.KERNEL_API_VERSION >= 4000;;
-gap> if hasInterpreterProfiling then
+gap> kernelVer := 0;;
+gap> if IsBound(GAPInfo.KernelInfo.KERNEL_API_VERSION) then
+> kernelVer := GAPInfo.KernelInfo.KERNEL_API_VERSION;
+> fi;;
+gap> if kernelVer >= 6000 then
+> profData := [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 1, 1, 0, 0 ], [ 0, 0, 0, 0 ],
+>  [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ],
+>  [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ],
+>  [ 1, 0, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 3, 0, 0 ], [ 1, 2, 0, 0 ],
+>  [ 1, 1, 0, 0 ] ];
+> elif kernelVer >= 4000 then
 >  profData := [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ],
 >                [ 1, 3, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ],
 >                [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ], 

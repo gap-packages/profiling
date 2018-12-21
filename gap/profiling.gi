@@ -741,7 +741,8 @@ end);
 # Outputs JSON for consumption by coveralls
 InstallGlobalFunction(OutputCoverallsJsonCoverage,
 function(data, outfile, jobid, pathtoremove)
-    local outstream, lineinfo, prev, file, lines, md5sum, md5path, md5cmd_full;
+    local outstream, lineinfo, prev, file, processfilename,
+          lines, md5sum, md5path, md5cmd_full;
 
     md5path := DirectoriesSystemPrograms();
     md5cmd_full := Filename( md5path, "md5sum" );
@@ -759,6 +760,14 @@ function(data, outfile, jobid, pathtoremove)
         fi;
         return SplitString(str, " ")[1];
     end;
+
+    # GAP's ReplacedString does not terminate for
+    # empty string to replace
+    if pathtoremove = "" then
+        processfilename := IdFunc;
+    else
+        processfilename := fn -> ReplacedString(fn, pathtoremove, "");
+    fi;
 
     outfile := UserHomeExpand(outfile);
     outstream := IO_File(outfile, "w");
@@ -783,13 +792,13 @@ function(data, outfile, jobid, pathtoremove)
     prev := false;
 
     for file in data.line_info do
-        if file[1] <> "stream" then
+        if IsExistingFile(file[1]) then
             if prev then
                 IO_Write(outstream, ",\n");
             fi;
             IO_Write(outstream, "{\n");
             IO_Write(outstream, Concatenation( "\"name\": \""
-                                             , ReplacedString(file[1], pathtoremove, "")
+                                             , processfilename(file[1])
                                              , "\",\n" ));
             IO_Write(outstream, Concatenation("\"source_digest\": \""
                                              , md5sum(file[1]) ,"\",\n"));

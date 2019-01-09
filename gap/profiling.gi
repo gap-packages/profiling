@@ -722,7 +722,7 @@ function(data, outfile)
     prev := false;
 
     for file in data.line_info do
-        if file[1] <> "stream" then
+        if IsExistingFile(file[1]) then
             if prev then
                 IO_Write(outstream, ",\n");
             fi;

@@ -740,7 +740,7 @@ end);
 
 # Outputs JSON for consumption by coveralls
 InstallGlobalFunction(OutputCoverallsJsonCoverage,
-function(data, outfile, jobid, pathtoremove)
+function(data, outfile, jobid, pathtoremove, service_name)
     local outstream, lineinfo, prev, file, processfilename,
           lines, md5sum, md5path, md5cmd_full;
 
@@ -787,7 +787,7 @@ function(data, outfile, jobid, pathtoremove)
 
     IO_Write(outstream, "{\n");
     IO_Write(outstream, Concatenation("\"service_job_id\": \"", jobid, "\",\n"));
-    IO_Write(outstream, "\"service_name\": \"travis-ci\",\n");
+    IO_Write(outstream, Concatenation("\"service_name\": \"", service_name, "\",\n");
     IO_Write(outstream, "\"source_files\": [\n");
     prev := false;
 

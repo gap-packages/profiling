@@ -760,8 +760,8 @@ function(data, outfile, pathtoremove, extraargs...)
         fi;
     fi;
 
+    env := GAPInfo.SystemEnvironment;
     if not IsBound(opt) then
-        env := GAPInfo.SystemEnvironment;
         if IsBound(env.TRAVIS) then
             opt := rec(
                 service_name := "travis-ci",
@@ -786,6 +786,18 @@ function(data, outfile, pathtoremove, extraargs...)
         else
             Error("Failed to detect your CI service, please specify via <opt>");
         fi;
+    fi;
+
+    if IsBound(env.COVERALLS_REPO_TOKEN) then
+        opt.repo_token := env.COVERALLS_REPO_TOKEN;
+    fi;
+
+    if IsBound(env.COVERALLS_PARALLEL) and env.COVERALLS_PARALLEL <> "false" then
+        opt.parallel := "true";
+    fi;
+
+    if IsBound(env.COVERALLS_FLAG_NAME) then
+        opt.flag_name := env.COVERALLS_FLAG_NAME;
     fi;
 
     md5path := DirectoriesSystemPrograms();

@@ -89,7 +89,7 @@ DeclareGlobalFunction("OutputAnnotatedCodeCoverageFiles");
 #!   <P/>
 DeclareGlobalFunction("OutputJsonCoverage");
 
-#! @Arguments cover, outfile, jobid, pathtoremove
+#! @Arguments cover, outfile, pathtoremove[, opt]
 #! @Description
 #!   Takes a previously generated profile and outputs a json coverage file which is
 #!   accepted by coveralls.io.
@@ -97,9 +97,13 @@ DeclareGlobalFunction("OutputJsonCoverage");
 #!   <A>cover</A> should either be a profile previously read by
 #!   <F>ReadLineByLineProfile</F>, or the filename of a profile which will first
 #!   be read with <F>ReadLineByLineProfile</F>.
-#!   <A>jobid</A> A string containing the travis jobid. We only support travis-ci at the moment.
-#!   <A>pathtoremove</A> the path to the tested repository;
-#!   this path will be removed from all filenames.
+#!   <A>pathtoremove</A> is the path to the tested repository;
+#!   this path prefix will be removed from all filenames in <A>cover</A>.
+#!   Finally, <A>opt</A> is a record. Its key/value pairs are directly inserted into
+#!   the produced JSON, in the form of a JSON dictionary. This can be used to
+#!   set the <C>service_name</C>, <C>service_job_id</C>, and more. If this record
+#!   is not given, we try to guess the correct values based on the environment
+#!   (currently only supported for Travis and AppVeyor).
 #!   <P/>
 #!   The output will be written to the file <A>outfile</A>.
 #!   <P/>

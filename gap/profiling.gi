@@ -740,9 +740,53 @@ end);
 
 # Outputs JSON for consumption by coveralls
 InstallGlobalFunction(OutputCoverallsJsonCoverage,
-function(data, outfile, jobid, pathtoremove, service_name)
+function(data, outfile, pathtoremove, extraargs...)
     local outstream, lineinfo, prev, file, processfilename,
-          lines, md5sum, md5path, md5cmd_full;
+          lines, md5sum, md5path, md5cmd_full, opt, env, key;
+
+    if Length(extraargs) > 1 then
+        Error("Usage: OutputCoverallsJsonCoverage(data, outfile, pathtoremove[, opt])");
+    elif Length(extraargs) = 1 then
+        opt := extraargs[1];
+
+        # HACK: provide backwards compatibility with old signature "data, outfile, jobid, pathtoremove"
+        # To be removed once GAP master and stable-4.10 have switched to the new calling
+        # conventions
+        if IsString(opt) then
+            # "pathtoremove" contains "jobid", "opt" contains the real "pathtoremove";
+            # we ignore the "jobid and
+            pathtoremove := opt;
+            Unbind(opt);
+        fi;
+    fi;
+
+    if not IsBound(opt) then
+        env := GAPInfo.SystemEnvironment;
+        if IsBound(env.TRAVIS) then
+            opt := rec(
+                service_name := "travis-ci",
+                service_job_id := env.TRAVIS_JOB_ID,
+                service_branch := env.TRAVIS_BRANCH,
+            );
+            if IsBound(env.TRAVIS_PULL_REQUEST) then
+                opt.service_pull_request := env.TRAVIS_PULL_REQUEST;
+            fi;
+        elif IsBound(env.APPVEYOR) then
+            opt := rec(
+                service_name := "appveyor",
+                service_number := env.APPVEYOR_BUILD_VERSION,
+                service_branch := env.APPVEYOR_REPO_BRANCH,
+                commit_sha := env.APPVEYOR_REPO_COMMIT,
+                service_build_url := Concatenation(
+                    "https://ci.appveyor.com/project/",
+                    env.APPVEYOR_REPO_NAME,
+                    "/build/",
+                    env.APPVEYOR_BUILD_VERSION),
+            );
+        else
+            Error("Failed to detect your CI service, please specify via <opt>");
+        fi;
+    fi;
 
     md5path := DirectoriesSystemPrograms();
     md5cmd_full := Filename( md5path, "md5sum" );
@@ -786,8 +830,9 @@ function(data, outfile, jobid, pathtoremove, service_name)
     end;
 
     IO_Write(outstream, "{\n");
-    IO_Write(outstream, Concatenation("\"service_job_id\": \"", jobid, "\",\n"));
-    IO_Write(outstream, Concatenation("\"service_name\": \"", service_name, "\",\n");
+    for key in RecNames(opt) do
+        IO_Write(outstream, Concatenation("\"", key, "\": \"", opt.(key), "\",\n"));
+    od;
     IO_Write(outstream, "\"source_files\": [\n");
     prev := false;
 

@@ -768,7 +768,7 @@ function(data, outfile, pathtoremove, extraargs...)
                 service_job_id := env.TRAVIS_JOB_ID,
                 service_branch := env.TRAVIS_BRANCH,
             );
-            if IsBound(env.TRAVIS_PULL_REQUEST) then
+            if IsBound(env.TRAVIS_PULL_REQUEST) and Length(env.TRAVIS_PULL_REQUEST) > 0 then
                 opt.service_pull_request := env.TRAVIS_PULL_REQUEST;
             fi;
         elif IsBound(env.APPVEYOR) then
@@ -783,6 +783,9 @@ function(data, outfile, pathtoremove, extraargs...)
                     "/build/",
                     env.APPVEYOR_BUILD_VERSION),
             );
+            if IsBound(env.APPVEYOR_PULL_REQUEST_NUMBER) then
+                opt.service_pull_request := env.APPVEYOR_PULL_REQUEST_NUMBER;
+            fi;
         else
             Error("Failed to detect your CI service, please specify via <opt>");
         fi;

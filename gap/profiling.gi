@@ -742,7 +742,7 @@ end);
 InstallGlobalFunction(OutputCoverallsJsonCoverage,
 function(data, outfile, pathtoremove, extraargs...)
     local outstream, lineinfo, prev, file, processfilename,
-          lines, md5sum, md5path, md5cmd_full, opt, env, key;
+          lines, md5sum, md5cmd_full, opt, env, key;
 
     if Length(extraargs) > 1 then
         Error("Usage: OutputCoverallsJsonCoverage(data, outfile, pathtoremove[, opt])");
@@ -803,22 +803,38 @@ function(data, outfile, pathtoremove, extraargs...)
         opt.flag_name := env.COVERALLS_FLAG_NAME;
     fi;
 
-    md5path := DirectoriesSystemPrograms();
-    md5cmd_full := Filename( md5path, "md5sum" );
-    if md5cmd_full = fail then
-        Error("Could not locate 'md5sum' in your PATH");
+    md5cmd_full := Filename( DirectoriesSystemPrograms(), "md5sum" );
+    if md5cmd_full <> fail then
+        md5sum := function(filename)
+            local stdout, res, str;
+            str := "";
+            stdout := OutputTextString(str, false);
+            res := Process( DirectoryCurrent(), md5cmd_full,
+                            InputTextNone(), stdout, [ filename ] );
+            if res <> 0 then
+                Error("failed to execute md5sum program");
+            fi;
+            return SplitString(str, " ")[1];
+        end;
+    else
+        md5cmd_full := Filename( DirectoriesSystemPrograms(), "md5" );
+        md5sum := function(filename)
+            local stdout, res, str;
+            str := "";
+            stdout := OutputTextString(str, false);
+            res := Process( DirectoryCurrent(), md5cmd_full,
+                            InputTextNone(), stdout, [ "-q", filename ] );
+            if res <> 0 then
+                Error("failed to execute md5 program");
+            fi;
+            return Chomp(str);
+        end;
     fi;
-    md5sum := function(filename)
-        local stdout, res, str;
-        str := "";
-        stdout := OutputTextString(str, false);
-        res := Process( DirectoryCurrent(), md5cmd_full
-                      , InputTextNone(), stdout, [ filename ] );
-        if res <> 0 then
-            Error("failed to execute md5sum program");
-        fi;
-        return SplitString(str, " ")[1];
-    end;
+
+    if md5cmd_full = fail then
+        Error("Could locate neither 'md5sum' nor 'md5' in your PATH");
+    fi;
+
 
     # GAP's ReplacedString does not terminate for
     # empty string to replace

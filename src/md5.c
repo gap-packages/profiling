@@ -33,18 +33,18 @@
    is possible they should be macros for speed, but I would be
    surprised if they were a performance bottleneck for MD5.  */
 
-static inline uint32_t getu32(const unsigned char *addr)
+static inline uint32_t getu32(const uint8_t *addr)
 {
 	return (((((unsigned long)addr[3] << 8) | addr[2]) << 8)
 		| addr[1]) << 8 | addr[0];
 }
 
-static inline  void putu32 (uint32_t data, unsigned char *addr)
+static inline  void putu32 (uint32_t data, uint8_t *addr)
 {
-	addr[0] = (unsigned char)data;
-	addr[1] = (unsigned char)(data >> 8);
-	addr[2] = (unsigned char)(data >> 16);
-	addr[3] = (unsigned char)(data >> 24);
+	addr[0] = (uint8_t)data;
+	addr[1] = (uint8_t)(data >> 8);
+	addr[2] = (uint8_t)(data >> 16);
+	addr[3] = (uint8_t)(data >> 24);
 }
 
 /*
@@ -66,7 +66,7 @@ void MD5Init(struct MD5Context *ctx)
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
+void MD5Update(struct MD5Context *ctx, uint8_t const *buf, unsigned len)
 {
 	uint32_t t;
 
@@ -82,7 +82,7 @@ void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 	/* Handle any leading odd-sized chunks */
 
 	if ( t ) {
-		unsigned char *p = ctx->in + t;
+		uint8_t *p = ctx->in + t;
 
 		t = 64-t;
 		if (len < t) {
@@ -113,10 +113,10 @@ void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
  * Final wrapup - pad to 64-byte boundary with the bit pattern 
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
-void MD5Final(unsigned char digest[16], struct MD5Context *ctx)
+void MD5Final(uint8_t digest[16], struct MD5Context *ctx)
 {
 	unsigned count;
-	unsigned char *p;
+	uint8_t *p;
 
 	/* Compute number of bytes mod 64 */
 	count = (ctx->bits[0] >> 3) & 0x3F;
@@ -173,7 +173,7 @@ void MD5Final(unsigned char digest[16], struct MD5Context *ctx)
  * reflect the addition of 16 longwords of new data.  MD5Update blocks
  * the data and converts bytes into longwords for this routine.
  */
-void MD5Transform(uint32_t buf[4], const unsigned char inraw[64])
+void MD5Transform(uint32_t buf[4], const uint8_t inraw[64])
 {
 	register uint32_t a, b, c, d;
 	uint32_t in[16];
@@ -270,7 +270,7 @@ void MD5Transform(uint32_t buf[4], const unsigned char inraw[64])
 int main (int argc, char **argv)
 {
 	struct MD5Context context;
-	unsigned char checksum[16];
+	uint8_t checksum[16];
 	int i;
 	int j;
 

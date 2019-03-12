@@ -8,6 +8,13 @@
 #include <set>
 #include <algorithm>
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+extern "C" {
+#include "md5.h"
+}
 
 enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4, StringId = 5, Info = 6, InvalidType = -1};
 
@@ -570,6 +577,62 @@ Obj HTMLEncodeString(Obj self, Obj param)
   return outstring;
 }
 
+Obj MD5File(Obj self, Obj filename)
+{
+  if (!IsStringConv(filename))
+  {
+    ErrorQuit("MD5File: <filename> must be a string", 0, 0);
+  }
+
+  MD5Context ctx;
+
+  MD5Init(&ctx);
+
+  int fd = open(CSTR_STRING(filename), O_RDONLY);
+  if (fd < 0)
+  {
+    ErrorQuit("MD5File: failed to open file %g", (Int)filename, 0);
+  }
+
+  // get the file length
+  struct stat sb;
+  if (fstat(fd, &sb) == -1 || sb.st_size < 0)
+  {
+    close(fd);
+    ErrorQuit("MD5File: failed to determine size of file %g", (Int)filename, 0);
+  }
+  off_t len = sb.st_size;
+
+  while (len > 0)
+  {
+    uint8_t buffer[4096];
+    size_t amount = (len < 4096 ? len : 4096);
+    ssize_t bytesRead = read(fd, buffer, amount);
+    if (bytesRead < 0) {
+      close(fd);
+      ErrorQuit("MD5File: error reading from file %g", (Int)filename, 0);
+    }
+    MD5Update(&ctx, buffer, (size_t)bytesRead);
+    len -= bytesRead;
+  }
+
+  close(fd);
+
+  uint8_t digest[16];
+  MD5Final(digest, &ctx);
+
+  char str[33];
+  static const char hex[] = "0123456789abcdef";
+  for (int i = 0; i < 16; i++)
+  {
+    str[2*i] = hex[digest[i] >> 4];
+    str[2*i + 1] = hex[digest[i] & 0x0f];
+  }
+  str[32] = '\0';
+
+  return MakeImmString(str);
+}
+
 typedef Obj (* GVarFuncTypeDef)(/*arguments*/);
 
 #define GVAR_FUNC_TABLE_ENTRY(srcfile, name, nparam, params) \
@@ -582,6 +645,7 @@ typedef Obj (* GVarFuncTypeDef)(/*arguments*/);
 static StructGVarFunc GVarFuncs [] = {
     GVAR_FUNC_TABLE_ENTRY("profiling.c",READ_PROFILE_FROM_STREAM, 2, "param, param2"),
     GVAR_FUNC_TABLE_ENTRY("profiling.c",HTMLEncodeString, 1, "param"),
+    GVAR_FUNC_TABLE_ENTRY("profiling.c",MD5File, 1, "filename"),
 
 	{ 0 } /* Finish with an empty entry */
 

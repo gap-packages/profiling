@@ -1,7 +1,7 @@
 #ifndef PROTOTYPES_HPP_ZLALA
 #define PROTOTYPES_HPP_ZLALA
 
-#include "include_gap_headers.hpp"
+#include "src/compiled.h"   // GAP headers
 
 namespace GAPdetail
 {

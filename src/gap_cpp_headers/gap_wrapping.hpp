@@ -1,7 +1,8 @@
 #ifndef _GAP_WRAP_HPP_AQD
 #define _GAP_WRAP_HPP_AQD
 
-#include "include_gap_headers.hpp"
+#include "src/compiled.h"   // GAP headers
+
 #include "gap_prototypes.hpp"
 #include "gap_exception.hpp"
 

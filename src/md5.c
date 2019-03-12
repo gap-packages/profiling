@@ -23,43 +23,23 @@
    copyright in any changes I have made; this code remains in the
    public domain.  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#if HAVE_STRING_H || STDC_HEADERS
 #include <string.h>	/* for memcpy() */
-#endif
-
-/* Add prototype support.  */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
-#endif
 
 #include "md5.h"
 
 /* Little-endian byte-swapping routines.  Note that these do not
-   depend on the size of datatypes such as uint32, nor do they require
+   depend on the size of datatypes such as uint32_t, nor do they require
    us to detect the endianness of the machine we are running on.  It
    is possible they should be macros for speed, but I would be
    surprised if they were a performance bottleneck for MD5.  */
 
-static uint32
-getu32 (addr)
-     const unsigned char *addr;
+static inline uint32_t getu32(const unsigned char *addr)
 {
 	return (((((unsigned long)addr[3] << 8) | addr[2]) << 8)
 		| addr[1]) << 8 | addr[0];
 }
 
-static void
-putu32 (data, addr)
-     uint32 data;
-     unsigned char *addr;
+static inline  void putu32 (uint32_t data, unsigned char *addr)
 {
 	addr[0] = (unsigned char)data;
 	addr[1] = (unsigned char)(data >> 8);
@@ -71,9 +51,7 @@ putu32 (data, addr)
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
  * initialization constants.
  */
-void
-MD5Init(ctx)
-     struct MD5Context *ctx;
+void MD5Init(struct MD5Context *ctx)
 {
 	ctx->buf[0] = 0x67452301;
 	ctx->buf[1] = 0xefcdab89;
@@ -88,18 +66,14 @@ MD5Init(ctx)
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-void
-MD5Update(ctx, buf, len)
-     struct MD5Context *ctx;
-     unsigned char const *buf;
-     unsigned len;
+void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 {
-	uint32 t;
+	uint32_t t;
 
 	/* Update bitcount */
 
 	t = ctx->bits[0];
-	if ((ctx->bits[0] = (t + ((uint32)len << 3)) & 0xffffffff) < t)
+	if ((ctx->bits[0] = (t + ((uint32_t)len << 3)) & 0xffffffff) < t)
 		ctx->bits[1]++;	/* Carry from low to high */
 	ctx->bits[1] += len >> 29;
 
@@ -139,10 +113,7 @@ MD5Update(ctx, buf, len)
  * Final wrapup - pad to 64-byte boundary with the bit pattern 
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
-void
-MD5Final(digest, ctx)
-     unsigned char digest[16];
-     struct MD5Context *ctx;
+void MD5Final(unsigned char digest[16], struct MD5Context *ctx)
 {
 	unsigned count;
 	unsigned char *p;
@@ -180,7 +151,7 @@ MD5Final(digest, ctx)
 	putu32(ctx->buf[1], digest + 4);
 	putu32(ctx->buf[2], digest + 8);
 	putu32(ctx->buf[3], digest + 12);
-	memset(ctx, 0, sizeof(ctx));	/* In case it's sensitive */
+	memset(ctx, 0, sizeof(*ctx));	/* In case it's sensitive */
 }
 
 #ifndef ASM_MD5
@@ -202,13 +173,10 @@ MD5Final(digest, ctx)
  * reflect the addition of 16 longwords of new data.  MD5Update blocks
  * the data and converts bytes into longwords for this routine.
  */
-void
-MD5Transform(buf, inraw)
-     uint32 buf[4];
-     const unsigned char inraw[64];
+void MD5Transform(uint32_t buf[4], const unsigned char inraw[64])
 {
-	register uint32 a, b, c, d;
-	uint32 in[16];
+	register uint32_t a, b, c, d;
+	uint32_t in[16];
 	int i;
 
 	for (i = 0; i < 16; ++i)
@@ -299,8 +267,7 @@ MD5Transform(buf, inraw)
    RFC1321 for example.  */
 #include <stdio.h>
 
-int
-main (int argc, char **argv)
+int main (int argc, char **argv)
 {
 	struct MD5Context context;
 	unsigned char checksum[16];

@@ -1,47 +1,35 @@
 language: cpp
-sudo: false
+env:
+  global:
+    - GAP_BOOTSTRAP=minimal
+    - GAP_PKGS_TO_CLONE="io"
+    - GAP_PKGS_TO_BUILD="io" # exclude profiling, i.e., *this* package
+    - NO_COVERAGE=1  # tests are not compatible with regular coverage collection
 
-branches:
-  except:
-    - gh-pages
+addons:
+  apt_packages:
+    - libgmp-dev
+    - libreadline-dev
+    - libgmp-dev:i386
+    - libreadline-dev:i386
+    - gcc-multilib
+    - g++-multilib
 
 matrix:
   include:
-    - os: linux
-      compiler: gcc
-      env: BRANCH=master ABI=32 PKGOPTS="CFLAGS=-m32 LDFLAGS=-m32 LOPTS=-m32 CXXFLAGS=-m32"
-      addons:
-        apt_packages:
-          - libgmp-dev:i386
-          - gcc-multilib
-          - g++-multilib
-    - os: linux
-      env: BRANCH=master
-      compiler: gcc
-      addons:
-        apt_packages:
-         - libgmp-dev
-    - os: linux
-      env: BRANCH=stable-4.10
-      compiler: gcc
-      addons:
-        apt_packages:
-         - libgmp-dev
+    - env: GAPBRANCH=master ABI=32
+    - env: GAPBRANCH=master
+    - env: GAPBRANCH=stable-4.10
 
+branches:
+  only:
+    - master
 
-install:
-  - git clone --depth=2 https://github.com/gap-system/gap.git gapsrc -b ${BRANCH}
-  - pwd
-  - ( cd gapsrc && (./autogen.sh || true) && ./configure --with-gmp=system && make configure && make -j2 && make bootstrap-pkg-minimal)
-  - ( cd gapsrc/pkg && git clone --depth=2 https://github.com/gap-packages/io && cd io && ./autogen.sh && ./configure ${PKGOPTS} && make )
-  - pwd
-  - ( ./autogen.sh && ./configure --with-gaproot=gapsrc ${PKGOPTS} && make )
-  - pwd
-  - ls
-  - ls gapsrc
-  - ls gapsrc/pkg
-  - echo ln -s $(pwd) gapsrc/pkg/profile
-  - ln -s $(pwd) gapsrc/pkg/profile
-
+before_script:
+  - git clone https://github.com/gap-system/pkg-ci-scripts.git scripts
+  - scripts/build_gap.sh
 script:
-  - gapsrc/bin/gap.sh tst/testall.g
+  - scripts/build_pkg.sh && scripts/run_tests.sh
+after_script:
+  - bash scripts/gather-coverage.sh
+  - bash <(curl -s https://codecov.io/bash)

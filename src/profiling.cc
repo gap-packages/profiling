@@ -12,9 +12,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-extern "C" {
+
 #include "md5.h"
-}
+
 
 enum ProfType { Read = 1, Exec = 2, IntoFun = 3, OutFun = 4, StringId = 5, Info = 6, InvalidType = -1};
 

@@ -1,3 +1,5 @@
+#  Please refer to the COPYRIGHT file of the profiling package for details.
+#  SPDX-License-Identifier: MIT
 #
 # profiling: Line by line profiling and code coverage for GAP
 #

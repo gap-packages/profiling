@@ -1,3 +1,5 @@
+//  Please refer to the COPYRIGHT file of the profiling package for details.
+//  SPDX-License-Identifier: MIT
 #ifndef BASE1VEC_CDJXJIO
 #define BASE1VEC_CDJXJIO
 #include <vector>

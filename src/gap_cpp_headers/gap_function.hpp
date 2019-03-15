@@ -1,3 +1,5 @@
+//  Please refer to the COPYRIGHT file of the profiling package for details.
+//  SPDX-License-Identifier: MIT
 #ifndef GAP_FUNCTION_HPPQR
 #define GAP_FUNCTION_HPPQR
 

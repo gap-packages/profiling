@@ -1,3 +1,5 @@
+//  Please refer to the COPYRIGHT file of the profiling package for details.
+//  SPDX-License-Identifier: MIT
 #ifndef GAP_HELPER_PNFRE
 #define GAP_HELPER_PNFRE
 

@@ -1,3 +1,5 @@
+//  Please refer to the COPYRIGHT file of the profiling package for details.
+//  SPDX-License-Identifier: MIT
 #ifndef PROTOTYPES_HPP_ZLALA
 #define PROTOTYPES_HPP_ZLALA
 

@@ -1,3 +1,5 @@
+//  Please refer to the COPYRIGHT file of the profiling package for details.
+//  SPDX-License-Identifier: MIT
 
 #include "rapidjson/reader.h"
 #include "rapidjson/error/en.h"

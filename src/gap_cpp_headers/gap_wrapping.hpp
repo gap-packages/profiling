@@ -1,3 +1,5 @@
+//  Please refer to the COPYRIGHT file of the profiling package for details.
+//  SPDX-License-Identifier: MIT
 #ifndef _GAP_WRAP_HPP_AQD
 #define _GAP_WRAP_HPP_AQD
 

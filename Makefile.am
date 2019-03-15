@@ -11,7 +11,7 @@ GAPINSTALLLIB = $(abs_top_srcdir)/$(BINARCHDIR)/profiling.so
 
 lib_LTLIBRARIES = profiling.la
 
-profiling_la_SOURCES = src/profiling.cc src/md5.c
+profiling_la_SOURCES = src/profiling.cc src/md5.cc
 profiling_la_CPPFLAGS = $(GAP_CPPFLAGS)
 profiling_la_CFLAGS = $(GAP_CFLAGS)
 profiling_la_LDFLAGS = $(GAP_LDFLAGS) -module -avoid-version

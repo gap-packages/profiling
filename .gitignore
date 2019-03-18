@@ -49,5 +49,3 @@
 *.la
 src/*.lo
 
-/gh-pages/
-/tmp/

@@ -22,8 +22,8 @@ matrix:
     - env: GAPBRANCH=stable-4.10
 
 branches:
-  only:
-    - master
+  except:
+    - gh-pages
 
 before_script:
   - git clone https://github.com/gap-system/pkg-ci-scripts.git scripts

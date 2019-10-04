@@ -37,13 +37,5 @@ Optionally, if this package is not within GAP's pkg directory,
 you can use the following notation to tell configure where GAP
 is located.
 
-./configure --with-gaproot=<location of GAP root>
-make
-
-Building from git / the github repository
------------------------------------------
-
-If you are building from a git checkout from github, then run
-./autogen.sh
-./configure
+./configure <location of GAP root>
 make

@@ -1,0 +1,35 @@
+#!/bin/sh
+# usage: configure gappath
+# this script creates a `Makefile' from `Makefile.in'
+
+set -e
+
+if test -z "$1"; then
+  GAPPATH=../..; echo "Using ../.. as default GAP path";
+else
+  GAPPATH=$1;
+fi
+
+if test ! -r "$GAPPATH/sysinfo.gap" ; then
+    echo
+    echo "No file $GAPPATH/sysinfo.gap found."
+    echo
+    echo "Usage: ./configure [GAPPATH]"
+    echo "       where GAPPATH is a path to your GAP installation"
+    echo "       (The default for GAPPATH is \"../..\")"
+    echo
+    echo "Either your GAPPATH is incorrect or the GAP it is pointing to"
+    echo "is not properly compiled (do \"./configure && make\" there first)."
+    echo
+    echo "Aborting... No Makefile is generated."
+    echo
+    exit 1
+fi
+
+echo "Using settings from $GAPPATH/sysinfo.gap"
+
+# update Makefile.gappkg from GAP installation, if possible
+test -r "$GAPPATH/etc/Makefile.gappkg" && cp "$GAPPATH/etc/Makefile.gappkg" .
+
+#
+sed -e "s;@GAPPATH@;$GAPPATH;g" Makefile.in > Makefile

@@ -11,6 +11,4 @@ AutoDoc( rec( scaffold := true,
             autodoc := rec( files := [ "doc/tutorial.autodoc" ] ),
 ) );
 
-PrintTo("VERSION", GAPInfo.PackageInfoCurrent.Version);
-
 QUIT;

@@ -541,11 +541,11 @@ Obj HTMLEncodeString(Obj self, Obj param)
   }
 
   Int len = GET_LEN_STRING(param);
-  Char* ptr = CSTR_STRING(param);
   // Make long enough there is no chance a
   // resize will be needed.
   Obj outstring = NEW_STRING(len * 6);
-  Char* outptr = CSTR_STRING(outstring);
+  char* ptr = CSTR_STRING(param);
+  char* outptr = CSTR_STRING(outstring);
   Int outpos = 0;
   for(Int i = 0; i < len; ++i)
   {

@@ -26,7 +26,6 @@ dircontentsrecursive := function(dir)
 end;
 
 dir := [DirectoriesPackageLibrary( "profiling", "tst/tstall" )[1]];
-Add(dir, DirectoriesPackageLibrary( "profiling", "tst/tst4.9" )[1] );
 
 files := Concatenation(List(dir, dircontentsrecursive));
 tstfiles := Filtered(files, x -> EndsWith(x,".tst"));

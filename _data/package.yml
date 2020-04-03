@@ -1,6 +1,6 @@
 name: profiling
-version: 2.2.1
-date: 15/03/2019
+version: 2.3
+date: 03/04/2020
 description: Line by line profiling and code coverage for GAP
 
 authors:
@@ -11,7 +11,7 @@ maintainers:
     - name: Christopher Jefferson
       url: http://caj.host.cs.st-andrews.ac.uk/
 
-GAP: ">= 4.9"
+GAP: ">= 4.10"
 
 needed-pkgs:
     - name: "GAPDoc"
@@ -27,7 +27,7 @@ packageinfo: https://gap-packages.github.io/profiling/PackageInfo.g
 
 downloads:
     - name: .tar.gz
-      url: https://github.com/gap-packages/profiling/releases/download/v2.2.1/profiling-2.2.1.tar.gz
+      url: https://github.com/gap-packages/profiling/releases/download/v2.3/profiling-2.3.tar.gz
 
 abstract: 
 

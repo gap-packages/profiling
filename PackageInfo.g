@@ -10,8 +10,9 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "2.2.1",
-Date := "15/03/2019", # dd/mm/yyyy format
+Version := "2.3",
+Date := "03/04/2020", # dd/mm/yyyy format
+License := "MIT AND CDDL-1.0",
 
 Persons := [
   rec(
@@ -68,7 +69,7 @@ PackageDoc := rec(
 ),
 
 Dependencies := rec(
-  GAP := ">= 4.9",
+  GAP := ">= 4.10",
   NeededOtherPackages := [ [ "GAPDoc", ">= 1.5" ], ["IO", ">= 4.4.4" ] ],
   SuggestedOtherPackages := [ ],
   ExternalConditions := [ ],

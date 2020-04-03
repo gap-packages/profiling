@@ -1,3 +1,22 @@
+2.3.0
+=====
+
+* Fix rare crash
+* Update build system
+
+2.2.1
+=====
+
+* Fix typo which broke compiling
+
+2.2.0
+=====
+
+* Use better MD5 code
+* Clean up building
+* Add tutorial
+
+
 2.0.1
 =====
 

@@ -36,7 +36,7 @@ PackageWWWHome := "https://gap-packages.github.io/profiling/",
 ArchiveURL     := Concatenation("https://github.com/gap-packages/profiling/",
                                 "releases/download/v", ~.Version,
                                 "/profiling-", ~.Version),
-README_URL     := Concatenation( ~.PackageWWWHome, "README" ),
+README_URL     := Concatenation( ~.PackageWWWHome, "README.md" ),
 PackageInfoURL := Concatenation( ~.PackageWWWHome, "PackageInfo.g" ),
 
 ArchiveFormats := ".tar.gz",

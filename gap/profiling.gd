@@ -91,6 +91,19 @@ DeclareGlobalFunction("OutputAnnotatedCodeCoverageFiles");
 #!   <P/>
 DeclareGlobalFunction("OutputJsonCoverage");
 
+
+#! @Arguments cover, outfile
+#! @Description
+#!   Takes a previously generated profile and outputs an lcov coverage file.
+#!   <P/>
+#!   <A>codecover</A> should either be a profile previously read by
+#!   <F>ReadLineByLineProfile</F>, or the filename of a profile which will first
+#!   be read with <F>ReadLineByLineProfile</F>.
+#!   <P/>
+#!   The output will be written to the file <A>outfile</A>.
+#!   <P/>
+DeclareGlobalFunction("OutputLcovCoverage");
+
 #! @Arguments cover, outfile, pathtoremove[, opt]
 #! @Description
 #!   Takes a previously generated profile and outputs a json coverage file which is

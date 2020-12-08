@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/gap-packages/profiling.svg?branch=master)](https://travis-ci.org/gap-packages/profiling)
+[![Build Status](https://travis-ci.com/gap-packages/profiling.svg?branch=master)](https://travis-ci.com/gap-packages/profiling)
 [![Code Coverage](https://codecov.io/github/gap-packages/profiling/coverage.svg?branch=master&token=)](https://codecov.io/gh/gap-packages/profiling)
 
 # The GAP 4 package `profiling'

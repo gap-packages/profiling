@@ -1,6 +1,6 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl -w
 #
-# stackcolllapse.pl	collapse multiline stacks into single lines.
+# stackcollapse.pl	collapse multiline stacks into single lines.
 #
 # Parses a multiline stack followed by a number on a separate line, and
 # outputs a semicolon separated stack followed by a space and the number.
@@ -88,7 +88,20 @@ foreach (<>) {
 	$frame =~ s/(::.*)[(<].*/$1/;
 
 	$frame = "-" if $frame eq "";
-	unshift @stack, $frame;
+
+        my @inline;
+        for (split /\->/, $frame) {
+            my $func = $_;
+
+            # Strip out L and ; included in java stacks
+            $func =~ tr/\;/:/;
+            $func =~ s/^L//;
+            $func .= "_[i]" if scalar(@inline) > 0; #inlined
+
+            push @inline, $func;
+        }
+
+	unshift @stack, @inline;
 }
 
 foreach my $k (sort { $a cmp $b } keys %collapsed) {

@@ -1,5 +1,5 @@
 This is a copy of https://github.com/brendangregg/FlameGraph, 
-commit 4d7e64e4a0bcaa from Dec 17, 2015.
+commit a258e78 from July 29, 2020.
 
 The 'demos' directory, and 'example-*' files have been removed,
 as we do not require them. 

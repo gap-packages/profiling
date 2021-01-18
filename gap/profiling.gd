@@ -36,7 +36,7 @@ DeclareGlobalFunction( "MergeLineByLineProfiles" );
 #! A 'flame graph' is a method of visualising where time is spent by a program.
 
 
-#! @Arguments profile [, filename]
+#! @Arguments profile [, filename] [, options]
 #! @Description
 #!   Generate an 'svg' file which represents a 'flame graph', a method of visualising
 #!   where time is spent by a program.
@@ -47,6 +47,14 @@ DeclareGlobalFunction( "MergeLineByLineProfiles" );
 #!   <P/>
 #!   The flame graph will be written to <A>filename</A> (or returned as a
 #!   string if <A>filename</A> is not present).
+#!   <P/>
+#!   The final (optional) argument is a record of options. Currently, the allowed
+#!   options are 'squash' (which is a boolean). If 'squash' is true then recursive
+#!   functions calls will be squashed, so the graph will not show recursive functions
+#!   calling themselves. The other allowed option is 'type', which can be "default"
+#!   (a standard flamegraph), "reverse" (reverse the graph, showing the leaf functions
+#!   first), and "chart" (where the graph shows the flow of time from left-to-right,
+#!   rather than merging all calls from one function to another into one block).
 DeclareGlobalFunction("OutputFlameGraph");
 
 #! @Arguments profile [, filename]
@@ -61,6 +69,7 @@ DeclareGlobalFunction("OutputFlameGraph");
 #!   <P/>
 #!   The flame graph input will be written to <A>filename</A> (or returned as a
 #!   string if <A>filename</A> is not present).
+#!   <P/>
 DeclareGlobalFunction("OutputFlameGraphInput");
 
 

@@ -230,25 +230,55 @@ end);
 
 
 InstallGlobalFunction("OutputFlameGraph", function(args...)
-  local instr, instream, outstr, outstream;
-  if Length(args) = 1 then
+  local instr, instream, outstr, outstream, returnstring, options, extraarg;
+
+  returnstring := false;
+  options := rec(type := "default");
+
+  if Length(args) = 1 or (Length(args) = 2 and IsRecord(args[2])) then
     instr := OutputFlameGraphInput(args[1]);
     instream := InputTextString(instr);
 
     outstr := "";
     outstream := OutputTextString(outstr, false);
-  else
+    returnstring := true;
+
+    if Length(args) = 2 then
+      options := args[2];
+    fi;
+  elif Length(args) = 2 or Length(args) = 3 then
     OutputFlameGraphInput(args[1], Concatenation(args[2], ".tmp"));
     instream := InputTextFile(Concatenation(args[2], ".tmp"));
 
     outstream := OutputTextFile(args[2], false);
+
+    if Length(args) = 3 then
+      options := args[3];
+    fi;
+  else
+    ErrorNoReturn("OutputFlameGraph(profile [, filename] [,options])");
+  fi;
+
+  args := Filename(DirectoriesPackageLibrary( "profiling", "FlameGraph" ),"flamegraph.pl");
+  if not IsBound(options.type) or options.type = "default" then
+    ; # No argument needed
+  elif options.type = "reverse" then
+    args := Concatenation(args, " --reverse");
+  elif options.type = "chart" then
+    args :=Concatenation(args, " --flamechart");
+  else
+    ErrorNoReturn("Invalid options.type in FlameGraph config: ", options.type);
+  fi;
+
+  if IsBound(options.squash) and options.squash then
+    args := Concatenation(Filename(DirectoriesPackageLibrary( "profiling", "FlameGraph" ),"stackcollapse-recursive.pl"), " | ", args);
   fi;
 
   Process(DirectoryCurrent(), Filename(Directory("/bin"),"/sh"),
-          instream, outstream,
-          ["-c", Filename(DirectoriesPackageLibrary( "profiling", "FlameGraph" ),"flamegraph.pl")]);
+          instream, outstream, ["-c", args]
+         );
 
-  if Length(args) = 1 then
+  if returnstring then
     return outstr;
   fi;
 end);
@@ -332,19 +362,27 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           readlineset, execlineset, outchar,
           outputhtml, outputoverviewhtml, outputfunctablehtml,
           stringWithSeparators,
-          warnedExecNotRead, filebuf, fileview, flame;
+          warnedExecNotRead, filebuf, fileview, flame, options, flameoptions, o, squash;
 
-    if Length(arg) < 2 or Length(arg) > 3 then
-      ErrorNoReturn("Usage: OutputAnnotatedCodeCoverageFiles(data, [indir,] outdir)");
-    fi;
+    options := rec();
 
     data := arg[1];
     if Length(arg) = 2 then
       indir := "";
       outdir := arg[2];
-    else
+    elif Length(arg) = 3 and not IsRecord(arg[3]) then
       indir := arg[2];
       outdir := arg[3];
+    elif Length(arg) = 3 and IsRecord(arg[3]) then
+      indir := "";
+      outdir := arg[2];
+      options := arg[3];
+    elif Length(arg) = 4 and IsRecord(arg[4]) then
+      indir := arg[2];
+      outdir := arg[3];
+      options := arg[4];
+    else
+      ErrorNoReturn("Usage: OutputAnnotatedCodeCoverageFiles(data, [indir,] outdir [, options])");
     fi;
 
     if IsDirectory(indir) then
@@ -563,7 +601,26 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream, Concatenation(_prof_CSS_std, _prof_CSS_overview));
       PrintTo(outstream, "</style>");
       if havetime then
-        PrintTo(outstream, """<p><a href="flame.svg">Flame Graph</a></p>""");
+        PrintTo(outstream, """
+                          <table style="width:100%">
+                          <tr>
+                            <th><b>Flame Graphs</b>
+                            <th>Standard</th>
+                            <th>Stacks Reversed</th>
+                            <th>X-Axis Sorted by Time</th>
+                          </tr>
+                          <tr>
+                            <th>Standard</th>
+                            <td><a href="flame-default-standard.svg">Graph</a></th>
+                            <td><a href="flame-reverse-standard.svg">Graph</a></tdt>
+                            <td><a href="flame-chart-standard.svg">Graph</a></td>
+                          <tr>
+                            <th>Squashed Recursive Function</th>
+                            <td><a href="flame-default-squash.svg">Graph</a></th>
+                            <td><a href="flame-reverse-squash.svg">Graph</a></td>
+                            <td><a href="flame-chart-squash.svg">Graph</a></td>
+                          </tr>
+                        </table></p>""");
         PrintTo(outstream, """<p><a href="funcoverview.html">Function Overview</a></p>""");
       fi;
       PrintTo(outstream, "<table cellspacing='0' cellpadding='0' class=\"sortable\">\n",
@@ -684,7 +741,17 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
 
     if ForAny(overview, x -> IsBound(x.filetime) and x.filetime > 0) then
-      OutputFlameGraph(data, Concatenation(outdir, "/flame.svg"));
+      for o in ["default", "reverse", "chart"] do
+        for squash in ["standard", "squash"] do
+          flameoptions := rec(type := o);
+          if squash = "standard" then
+            flameoptions.squash := false;
+          else
+            flameoptions.squash := true;
+          fi;
+          OutputFlameGraph(data, StringFormatted("{}/flame-{}-{}.svg", outdir, o, squash), flameoptions);
+        od;
+      od;
 
       outstream := OutputTextFile(Concatenation(outdir, "/funcoverview.html"), false);
       SetPrintFormattingStatus(outstream, false);

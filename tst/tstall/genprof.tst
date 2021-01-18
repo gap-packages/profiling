@@ -17,6 +17,18 @@ true
 gap> OutputFlameGraph(file, Filename(dir, "flame"));
 gap> IsReadableFile(Filename(dir, "flame"));
 true
+gap> OutputFlameGraph(file, Filename(dir, "flame2"), rec(type := "chart"));
+gap> IsReadableFile(Filename(dir, "flame2"));
+true
+gap> OutputFlameGraph(file, Filename(dir, "flame3"), rec(type := "reverse"));
+gap> IsReadableFile(Filename(dir, "flame3"));
+true
+gap> OutputFlameGraph(file, Filename(dir, "flame4"), rec(squash := true));
+gap> IsReadableFile(Filename(dir, "flame4"));
+true
+gap> OutputFlameGraph(file, Filename(dir, "flame5"), rec(type := "reverse", squash := true));
+gap> IsReadableFile(Filename(dir, "flame5"));
+true
 gap> x := ReadLineByLineProfile(file);;
 gap> OutputAnnotatedCodeCoverageFiles(x, Filename(dir, "outdir2"));
 gap> IsReadableFile(Filename(dir, "outdir2/index.html"));

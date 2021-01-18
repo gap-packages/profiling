@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl -w
 #
 # hotcoldgraph.pl	flame/cold stack grapher.
 #

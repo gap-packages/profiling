@@ -14,5 +14,7 @@ gap> HTMLEncodeString(" ");
 "&nbsp;"
 gap> HTMLEncodeString("     ");
 "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+gap> HTMLEncodeString("\t");
+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
 gap> HTMLEncodeString(" &<a &<b&< c");
 "&nbsp;&amp;&lt;a&nbsp;&amp;&lt;b&amp;&lt;&nbsp;c"

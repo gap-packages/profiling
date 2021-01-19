@@ -542,8 +542,8 @@ Obj HTMLEncodeString(Obj self, Obj param)
 
   Int len = GET_LEN_STRING(param);
   // Make long enough there is no chance a
-  // resize will be needed.
-  Obj outstring = NEW_STRING(len * 6);
+  // resize will be needed. - 8 * 6 to allow for tabs
+  Obj outstring = NEW_STRING(len * 8 * 6);
   char* ptr = CSTR_STRING(param);
   char* outptr = CSTR_STRING(outstring);
   Int outpos = 0;
@@ -570,6 +570,16 @@ Obj HTMLEncodeString(Obj self, Obj param)
         outptr[outpos++] = 's';
         outptr[outpos++] = 'p';
         outptr[outpos++] = ';';
+        break;
+      case '\t':
+        for(int i = 0; i < 8; ++i) {
+          outptr[outpos++] = '&';
+          outptr[outpos++] = 'n';
+          outptr[outpos++] = 'b';
+          outptr[outpos++] = 's';
+          outptr[outpos++] = 'p';
+          outptr[outpos++] = ';';
+        }
         break;
       default:
         outptr[outpos++] = ptr[i];

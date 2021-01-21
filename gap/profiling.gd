@@ -75,7 +75,7 @@ DeclareGlobalFunction("OutputFlameGraphInput");
 
 #! @Section Generating coverage reports
 
-#! @Arguments coverage, [indir,] outdir
+#! @Arguments coverage, [indir,] outdir [, options]
 #! @Description
 #!   Takes a previously generated profile and outputs HTML which shows the lines
 #!   of code that were executed, and (if this was originally recorded) how long was spent
@@ -90,6 +90,9 @@ DeclareGlobalFunction("OutputFlameGraphInput");
 #!   <P/>
 #!   The optional second argument gives a filter, only information about filenames
 #!   starting with <A>indir</A> will be outputted.
+#!   <P/>
+#!   The final optional argument is a record of configuration options. The only
+#!   currently allowed option is 'title', which will set the title of created pages.
 DeclareGlobalFunction("OutputAnnotatedCodeCoverageFiles");
 
 #! @Arguments coverage, outfile

@@ -360,7 +360,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
           infile, outname, instream, outstream, line, allLines,
           counter, overview, i, fileinfo, filenum, callinfo, calledbyinfo,
           readlineset, execlineset, outchar,
-          outputhtml, outputoverviewhtml, outputfunctablehtml,
+          outputhtml, outputoverviewhtml, outputfunctablehtml, outputhtmlhead,
           stringWithSeparators,
           warnedExecNotRead, filebuf, fileview, flame, options, flameoptions, o, squash;
 
@@ -436,11 +436,21 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       return Reversed( withSeps );
     end;
 
+    outputhtmlhead := function(outstream)
+      PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html>\n");
+      PrintTo(outstream, "<head><title>\n");
+      if IsBound(options.title) then
+        PrintTo(outstream, options.title);
+      fi;
+      PrintTo(outstream, "</title></head>\n");
+    end;
+
     outputfunctablehtml := function(outstream)
       local funcusage, line, fn, linkname,name;
 
       funcusage := _Prof_GatherFunctionUsage(data);
-      PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
+      outputhtmlhead(outstream);
+      PrintTo(outstream, "<body>\n");
       PrintTo(outstream, "<style>");
       PrintTo(outstream, _prof_CSS_std);
       PrintTo(outstream,"</style>");
@@ -477,7 +487,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       hasTiming := _prof_fileHasTiming(fileinfo);
       hasCoverage := _prof_fileHasCoverage(fileinfo);
       coverage := fileinfo[2];
-      PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
+      outputhtmlhead(outstream);
+      PrintTo(outstream, "<body>\n");
       PrintTo(outstream, "<style>");
       PrintTo(outstream, _prof_CSS_std);
       if hasTiming then
@@ -596,7 +607,8 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       filename := Concatenation(outdir, "/index.html");
       outstream := OutputTextFile(filename, false);
       SetPrintFormattingStatus(outstream, false);
-      PrintTo(outstream, "<!DOCTYPE html><script src=\"sorttable.js\"></script><html><body>\n");
+      outputhtmlhead(outstream);
+      PrintTo(outstream, "<body>\n");
       PrintTo(outstream, "<style>");
       PrintTo(outstream, Concatenation(_prof_CSS_std, _prof_CSS_overview));
       PrintTo(outstream, "</style>");

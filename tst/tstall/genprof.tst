@@ -33,6 +33,11 @@ gap> x := ReadLineByLineProfile(file);;
 gap> OutputAnnotatedCodeCoverageFiles(x, Filename(dir, "outdir2"));
 gap> IsReadableFile(Filename(dir, "outdir2/index.html"));
 true
+gap> OutputAnnotatedCodeCoverageFiles(x, Filename(dir, "outdir3"), rec(title := "mytitle"));
+gap> IsReadableFile(Filename(dir, "outdir3/index.html"));
+true
+gap> PositionSublist(StringFile(Filename(dir, "outdir3/index.html")), "mytitle") <> fail;
+true
 gap> OutputFlameGraph(x, Filename(dir, "flame2"));
 gap> IsReadableFile(Filename(dir, "flame2"));
 true

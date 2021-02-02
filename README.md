@@ -9,7 +9,7 @@ which lines of code are even executed.
 
 The main function provided by this package is
 `OutputAnnotatedCodeCoverageFiles`, which takes a previously
-generated profile (using `ProfileLineByLine` or `CoverageLineByLine,
+generated profile (using `ProfileLineByLine` or `CoverageLineByLine`,
 both provided by the GAP library), and outputs human-readable`
 HTML files.
 

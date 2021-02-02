@@ -1,3 +1,11 @@
+
+2.4.0
+=====
+
+* Provide multiple flamegraphs, to give different viewpoints
+* Improve documentation and tutorial
+* Support Lcov format output
+
 2.3.0
 =====
 

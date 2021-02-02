@@ -10,8 +10,8 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "2.3",
-Date := "03/04/2020", # dd/mm/yyyy format
+Version := "2.4",
+Date := "02/02/2021", # dd/mm/yyyy format
 License := "MIT AND CDDL-1.0",
 
 Persons := [
@@ -20,7 +20,7 @@ Persons := [
     IsMaintainer := true,
     FirstNames := "Christopher",
     LastName := "Jefferson",
-    WWWHome := "http://caj.host.cs.st-andrews.ac.uk/",
+    WWWHome := "https://caj.host.cs.st-andrews.ac.uk/",
     Email := "caj21@st-andrews.ac.uk",
     PostalAddress := Concatenation(
                "St Andrews\n",
@@ -36,7 +36,7 @@ PackageWWWHome := "https://gap-packages.github.io/profiling/",
 ArchiveURL     := Concatenation("https://github.com/gap-packages/profiling/",
                                 "releases/download/v", ~.Version,
                                 "/profiling-", ~.Version),
-README_URL     := Concatenation( ~.PackageWWWHome, "README" ),
+README_URL     := Concatenation( ~.PackageWWWHome, "README.md" ),
 PackageInfoURL := Concatenation( ~.PackageWWWHome, "PackageInfo.g" ),
 
 ArchiveFormats := ".tar.gz",
@@ -49,7 +49,7 @@ ArchiveFormats := ".tar.gz",
 ##    "dev"           for development versions of packages
 ##    "other"         for all other packages
 ##
-Status := "dev",
+Status := "deposited",
 
 SourceRepository := rec( 
   Type := "git", 

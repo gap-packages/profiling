@@ -5,10 +5,11 @@
   [2XLineByLineProfileFunction[102X 2.4-1 
   [2XMergeLineByLineProfiles[102X 2.1-2 
   [2XOutputAnnotatedCodeCoverageFiles[102X 2.3-1 
-  [2XOutputCoverallsJsonCoverage[102X 2.3-3 
+  [2XOutputCoverallsJsonCoverage[102X 2.3-4 
   [2XOutputFlameGraph[102X 2.2-1 
   [2XOutputFlameGraphInput[102X 2.2-2 
   [2XOutputJsonCoverage[102X 2.3-2 
+  [2XOutputLcovCoverage[102X 2.3-3 
   [2XProfileFile[102X 2.4-2 
   [2XProfilePackage[102X 2.4-3 
   [2XReadLineByLineProfile[102X 2.1-1 

@@ -1,15 +1,15 @@
 name: profiling
-version: 2.3
-date: 03/04/2020
+version: 2.4
+date: 02/02/2021
 description: Line by line profiling and code coverage for GAP
 
 authors:
     - name: Christopher Jefferson
-      url: http://caj.host.cs.st-andrews.ac.uk/
+      url: https://caj.host.cs.st-andrews.ac.uk/
 
 maintainers:
     - name: Christopher Jefferson
-      url: http://caj.host.cs.st-andrews.ac.uk/
+      url: https://caj.host.cs.st-andrews.ac.uk/
 
 GAP: ">= 4.10"
 
@@ -22,15 +22,15 @@ needed-pkgs:
       url: "https://gap-packages.github.io/io"
 
 www: https://gap-packages.github.io/profiling/
-readme: https://gap-packages.github.io/profiling/README
+readme: https://gap-packages.github.io/profiling/README.md
 packageinfo: https://gap-packages.github.io/profiling/PackageInfo.g
 
 downloads:
     - name: .tar.gz
-      url: https://github.com/gap-packages/profiling/releases/download/v2.3/profiling-2.3.tar.gz
+      url: https://github.com/gap-packages/profiling/releases/download/v2.4/profiling-2.4.tar.gz
 
 abstract: 
 
-status: dev
+status: deposited
 doc-html: doc/chap0.html
 doc-pdf: doc/manual.pdf

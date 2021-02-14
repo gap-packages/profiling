@@ -940,7 +940,22 @@ end);
 
 InstallGlobalFunction("LineByLineProfileFunction",
   function(f, args)
-    local dir;
+    local dir, temp_wsl_check;
+
+    # Use a temporary check to support GAP versions without ARCH_IS_WSL
+    temp_wsl_check := function()
+      local bash, val;
+      if IsBoundGlobal("ARCH_IS_WSL") then
+        return ValueGlobal("ARCH_IS_WSL")();
+      fi;
+      bash := Filename(DirectoriesSystemPrograms(), "bash");
+      if bash = fail then
+        return false;
+      fi;
+      val := Process(Directory("/"), bash, InputTextNone(), OutputTextNone(), ["which", "explorer.exe"]);
+      return val = 0;
+    end;
+
     if IsLineByLineProfileActive() then
       ErrorNoReturn("Cannot profile when profiling already active!");
     fi;
@@ -954,6 +969,9 @@ InstallGlobalFunction("LineByLineProfileFunction",
       Exec(Concatenation("open ",Filename(dir, "/output/index.html")));
     elif ARCH_IS_WINDOWS() then
       Exec(Concatenation("cmd /c start ",Filename(dir, "/output/index.html")));
+    # Support versions of GAP without this function
+    elif temp_wsl_check() then
+      Exec(Concatenation("explorer.exe \"$(wslpath -a -w \"",Filename(dir, "/output/index.html"), "\")\""));
     else
       Exec(Concatenation("xdg-open ",Filename(dir, "/output/index.html")));
     fi;

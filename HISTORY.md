@@ -1,4 +1,7 @@
 
+* Support LineByLineProfileFunction in WSL
+
+
 2.4.0
 =====
 

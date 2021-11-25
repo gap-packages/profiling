@@ -22,6 +22,9 @@
 #include "vec1.hpp"
 #include "optional.hpp"
 
+#if !defined(GAP_KERNEL_MAJOR_VERSION) || GAP_KERNEL_MAJOR_VERSION < 7
+#define CONST_CSTR_STRING(x) CSTR_STRING(x)
+#endif
 
 namespace GAPdetail
 {
@@ -52,7 +55,7 @@ struct GAP_getter<char*>
     {
         if(!isa(recval))
             throw GAPException("Invalid attempt to read string");
-        return (char*)CHARS_STRING(recval);
+        return CSTR_STRING(recval);
     }
 };
 
@@ -66,7 +69,7 @@ struct GAP_getter<std::string>
     {
         if(!isa(recval))
             throw GAPException("Invalid attempt to read string");
-        return std::string((char*)CHARS_STRING(recval));
+        return std::string(CONST_CSTR_STRING(recval));
     }
 };
 
@@ -382,7 +385,7 @@ struct GAP_maker<std::string>
       Obj o;
       size_t len = s.length();
       o = NEW_STRING(len);
-      memcpy(CHARS_STRING(o), s.c_str(), len);
+      memcpy(CSTR_STRING(o), s.c_str(), len);
       return o;
     }
 };

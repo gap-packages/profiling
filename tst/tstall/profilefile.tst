@@ -2,8 +2,10 @@
 gap> tmpdir := DirectoryTemporary();;
 gap> quicktest := Filename(tmpdir, "quicktest.tst");;
 gap> runquicktest := Filename(tmpdir, "runquicktest.g");;
-gap> FileString(quicktest, "gap> Length([1,2,3]);\n3\n");;
-gap> FileString(runquicktest, StringFormatted("Test(\"{}\");\n", quicktest));;
+gap> IsPosInt(FileString(quicktest, "gap> Length([1,2,3]);\n3\n"));
+true
+gap> IsPosInt(FileString(runquicktest, StringFormatted("Test(\"{}\");\n", quicktest)));
+true
 gap> Test(quicktest);
 true
 gap> Read(runquicktest);

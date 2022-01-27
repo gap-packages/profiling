@@ -987,7 +987,7 @@ function(testfile, args...)
   opts := rec(outdir := DirectoryTemporary(),
               indir := "",
               showOutput := true,
-              open := false);
+              open := true);
   if Length(args) = 1 then
     if not IsRecord(args[1]) then
       ErrorNoReturn("ProfileFile: <opts> must be a record");

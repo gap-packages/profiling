@@ -938,23 +938,25 @@ function(data, outfile, pathtoremove, extraargs...)
     IO_Close(outstream);
 end);
 
+# Use a temporary check to support GAP versions without ARCH_IS_WSL
+__profiling_pkg_temp_wsl_check := function()
+local bash, val;
+if IsBoundGlobal("ARCH_IS_WSL") then
+  return ValueGlobal("ARCH_IS_WSL")();
+fi;
+
+# Can't copy ARCH_IS_WSL from GAP core, as it requires GAPInfo.KernelInfo.uname
+bash := Filename(DirectoriesSystemPrograms(), "bash");
+if bash = fail then
+  return false;
+fi;
+val := Process(Directory("/"), bash, InputTextNone(), OutputTextNone(), ["which", "explorer.exe"]);
+return val = 0;
+end;
+
 InstallGlobalFunction("LineByLineProfileFunction",
   function(f, args)
-    local dir, temp_wsl_check;
-
-    # Use a temporary check to support GAP versions without ARCH_IS_WSL
-    temp_wsl_check := function()
-      local bash, val;
-      if IsBoundGlobal("ARCH_IS_WSL") then
-        return ValueGlobal("ARCH_IS_WSL")();
-      fi;
-      bash := Filename(DirectoriesSystemPrograms(), "bash");
-      if bash = fail then
-        return false;
-      fi;
-      val := Process(Directory("/"), bash, InputTextNone(), OutputTextNone(), ["which", "explorer.exe"]);
-      return val = 0;
-    end;
+    local dir;
 
     if IsLineByLineProfileActive() then
       ErrorNoReturn("Cannot profile when profiling already active!");
@@ -970,7 +972,7 @@ InstallGlobalFunction("LineByLineProfileFunction",
     elif ARCH_IS_WINDOWS() then
       Exec(Concatenation("cmd /c start ",Filename(dir, "/output/index.html")));
     # Support versions of GAP without this function
-    elif temp_wsl_check() then
+    elif __profiling_pkg_temp_wsl_check() then
       Exec(Concatenation("explorer.exe \"$(wslpath -a -w \"",Filename(dir, "/output/index.html"), "\")\""));
     else
       Exec(Concatenation("xdg-open ",Filename(dir, "/output/index.html")));
@@ -1034,6 +1036,8 @@ EOF
       Exec(Concatenation("open ", page));
     elif ARCH_IS_WINDOWS() then
       Exec(Concatenation("cmd /c start ", page));
+    elif __profiling_pkg_temp_wsl_check() then
+      Exec(Concatenation("explorer.exe \"$(wslpath -a -w \"",page, "\")\""));
     else
       Exec(Concatenation("xdg-open ", page));
     fi;

@@ -1012,13 +1012,13 @@ function(testfile, args...)
   if testfile{[len-3 .. len]} = ".tst" then
     cmd := StringFormatted("""
 gapinput="Test(\"{}\"); quit;"
-{} --quitonbreak -a 500M -m 500M -A -q --cover {} {} <<EOF
+{} --quitonbreak -m 500M -A -q --cover {} {} <<EOF
 $gapinput
 EOF
     """, testfile, gap_cmd, rawfile, redirect);
   else
     cmd := StringFormatted("""
-{} --quitonbreak -a 500M -m 500M -A -q --cover {} {} {} <<EOF
+{} --quitonbreak -m 500M -A -q --cover {} {} {} <<EOF
 quit; quit;
 EOF
     """, gap_cmd, rawfile, testfile, redirect);

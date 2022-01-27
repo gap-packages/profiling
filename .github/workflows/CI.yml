@@ -45,10 +45,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: gap-actions/setup-gap-for-packages@v1
+      - uses: gap-actions/setup-gap@v2
         with:
           GAP_PKGS_TO_BUILD: "io" # exclude profiling, i.e., *this* package
-      - uses: gap-actions/compile-documentation-for-packages@v1
+      - uses: gap-actions/build-pkg-docs@v1
         with:
           use-latex: 'true'
       - name: 'Upload documentation'

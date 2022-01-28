@@ -35,6 +35,9 @@ jobs:
       - uses: gap-actions/run-pkg-tests@v2
         with:
           NO_COVERAGE: 'yes'
+      - name: "Generate source coverage reports by running gcov"
+        run: find . -type f -name '*.gcno' -exec gcov -pb {} +
+      - uses: codecov/codecov-action@v2
 
   # The Cygwin job
   test-cygwin:
@@ -53,6 +56,10 @@ jobs:
       - uses: gap-actions/run-pkg-tests@cygwin-v2
         with:
           NO_COVERAGE: 'yes'
+      - name: "Generate source coverage reports by running gcov"
+        run: find . -type f -name '*.gcno' -exec gcov -pb {} +
+        shell: bash
+      - uses: codecov/codecov-action@v2
       - name: "Setup tmate session"
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}

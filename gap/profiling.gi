@@ -941,13 +941,17 @@ end);
 # Use a temporary check to support GAP versions without ARCH_IS_WSL
 __profiling_pkg_temp_wsl_check := function()
 local bash, val;
-  if IsBoundGlobal("ARCH_IS_WSL") then
-    return ValueGlobal("ARCH_IS_WSL")();
-  fi;
+if IsBoundGlobal("ARCH_IS_WSL") then
+  return ValueGlobal("ARCH_IS_WSL")();
+fi;
 
-  return ARCH_IS_UNIX() and IsBound(GAPInfo.KernelInfo.uname.release) and (
-    POSITION_SUBSTRING(GAPInfo.KernelInfo.uname.release, "Microsoft", 0) <> fail or
-    POSITION_SUBSTRING(GAPInfo.KernelInfo.uname.release, "microsoft", 0) <> fail);
+# Can't copy ARCH_IS_WSL from GAP core, as it requires GAPInfo.KernelInfo.uname
+bash := Filename(DirectoriesSystemPrograms(), "bash");
+if bash = fail then
+  return false;
+fi;
+val := Process(Directory("/"), bash, InputTextNone(), OutputTextNone(), ["which", "explorer.exe"]);
+return val = 0;
 end;
 
 InstallGlobalFunction("LineByLineProfileFunction",

@@ -1,3 +1,9 @@
+2.5.0
+=====
+
+* Improve WSL support
+* Overhaul build system
+
 2.4.1
 =====
 

@@ -439,38 +439,22 @@ Obj GAP_getGlobal(const char* name)
 // we have to be more explicit with the types of our functions.
 Obj GAP_callFunction(GAPFunction fun)
 {
-    typedef Obj(*F)(Obj);
-    Obj funobj = fun.getObj();
-    ObjFunc hdlrfunc = HDLR_FUNC(funobj,0);
-    Obj ret = reinterpret_cast<F>(hdlrfunc)(funobj);
-    return ret;
+    return CALL_0ARGS(fun.getObj());
 }
 
 Obj GAP_callFunction(GAPFunction fun, Obj arg1)
 {
-    typedef Obj(*F)(Obj,Obj);
-    Obj funobj = fun.getObj();
-    ObjFunc hdlrfunc = HDLR_FUNC(funobj,1);
-    Obj ret = reinterpret_cast<F>(hdlrfunc)(funobj, arg1);
-    return ret;
+    return CALL_1ARGS(fun.getObj(), arg1);
 }
 
 Obj GAP_callFunction(GAPFunction fun, Obj arg1, Obj arg2)
 {
-    typedef Obj(*F)(Obj,Obj, Obj);
-    Obj funobj = fun.getObj();
-    ObjFunc hdlrfunc = HDLR_FUNC(funobj,2);
-    Obj ret = reinterpret_cast<F>(hdlrfunc)(funobj, arg1, arg2);
-    return ret;
+    return CALL_2ARGS(fun.getObj(), arg1, arg2);
 }
 
 Obj GAP_callFunction(GAPFunction fun, Obj arg1, Obj arg2, Obj arg3)
 {
-    typedef Obj(*F)(Obj,Obj, Obj, Obj);
-    Obj funobj = fun.getObj();
-    ObjFunc hdlrfunc = HDLR_FUNC(funobj,3);
-    Obj ret = reinterpret_cast<F>(hdlrfunc)(funobj, arg1, arg2, arg3);
-    return ret;
+    return CALL_3ARGS(fun.getObj(), arg1, arg2, arg3);
 }
 
 struct GAP_convertor

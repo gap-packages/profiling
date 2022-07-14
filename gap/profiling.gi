@@ -16,7 +16,7 @@ function(filename)
 end );
 
 # Merges a full list of profiles -- can run out of memory for many profiles.
-BIND_GLOBAL("_prof_mergeProfiles",
+BindGlobal("_prof_mergeProfiles",
 function(filenames)
   local profs, f, outprof, p, line, file, line_info, line_function_calls,
   stacks, unionlist, linefunccpy, i;

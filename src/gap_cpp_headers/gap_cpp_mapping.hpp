@@ -12,7 +12,7 @@
 #include <utility>
 #include <set>
 
-#include "src/compiled.h"   // GAP headers
+#include "compiled.h"   // GAP headers
 
 #include "gap_prototypes.hpp"
 #include "gap_exception.hpp"

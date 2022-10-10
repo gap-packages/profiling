@@ -10,8 +10,8 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "2.5.0",
-Date := "22/02/2022", # dd/mm/yyyy format
+Version := "2.5.1",
+Date := "10/10/2022", # dd/mm/yyyy format
 License := "MIT AND CDDL-1.0",
 
 Persons := [
@@ -62,7 +62,7 @@ AbstractHTML   :=  "",
 PackageDoc := rec(
   BookName  := "profiling",
   ArchiveURLSubset := ["doc"],
-  HTMLStart := "doc/chap0.html",
+  HTMLStart := "doc/chap0_mj.html",
   PDFFile   := "doc/manual.pdf",
   SixFile   := "doc/manual.six",
   LongTitle := "Line by line profiling and code coverage for GAP",

@@ -25,6 +25,7 @@ jobs:
       matrix:
         gap-branch:
           - master
+          - stable-4.12
           - stable-4.11
           - stable-4.10
         ABI: ['']
@@ -33,7 +34,7 @@ jobs:
             ABI: 32
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: gap-actions/setup-gap@v2
         with:
           GAP_PKGS_TO_BUILD: 'io' # exclude profiling, i.e., *this* package
@@ -45,7 +46,7 @@ jobs:
           NO_COVERAGE: 'yes'
       - name: "Generate source coverage reports by running gcov"
         run: find . -type f -name '*.gcno' -exec gcov -pb {} +
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
 
   # The Cygwin job
   test-cygwin:
@@ -55,7 +56,7 @@ jobs:
     env:
       CHERE_INVOKING: 1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: gap-actions/setup-cygwin@v1
       - uses: gap-actions/setup-gap@cygwin-v2
         with:
@@ -71,7 +72,7 @@ jobs:
       - name: "Generate source coverage reports by running gcov"
         run: find . -type f -name '*.gcno' -exec gcov -pb {} +
         shell: bash
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
       - name: "Setup tmate session"
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
@@ -83,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: gap-actions/setup-gap@v2
         with:
           GAP_PKGS_TO_BUILD: "io" # exclude profiling, i.e., *this* package
@@ -91,7 +92,8 @@ jobs:
         with:
           use-latex: 'true'
       - name: 'Upload documentation'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: manual
           path: ./doc/manual.pdf
+          if-no-files-found: error

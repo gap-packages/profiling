@@ -274,7 +274,7 @@ InstallGlobalFunction("OutputFlameGraph", function(args...)
     args := Concatenation(Filename(DirectoriesPackageLibrary( "profiling", "FlameGraph" ),"stackcollapse-recursive.pl"), " | ", args);
   fi;
 
-  Process(DirectoryCurrent(), Filename(Directory("/bin"),"/sh"),
+  Process(DirectoryCurrent(), Filename(Directory("/bin"),"sh"),
           instream, outstream, ["-c", args]
          );
 
@@ -962,20 +962,20 @@ InstallGlobalFunction("LineByLineProfileFunction",
       ErrorNoReturn("Cannot profile when profiling already active!");
     fi;
     dir := DirectoryTemporary();
-    ProfileLineByLine(Filename(dir, "/prof.gz"));
+    ProfileLineByLine(Filename(dir, "prof.gz"));
     CallFuncList(f, args);
     UnprofileLineByLine();
-    OutputAnnotatedCodeCoverageFiles(Filename(dir, "/prof.gz"),
-                                     Filename(dir, "/output"));
+    OutputAnnotatedCodeCoverageFiles(Filename(dir, "prof.gz"),
+                                     Filename(dir, "output"));
     if ARCH_IS_MAC_OS_X() then
-      Exec(Concatenation("open ",Filename(dir, "/output/index.html")));
+      Exec(Concatenation("open ",Filename(dir, "output/index.html")));
     elif ARCH_IS_WINDOWS() then
-      Exec(Concatenation("cmd /c start ",Filename(dir, "/output/index.html")));
+      Exec(Concatenation("cmd /c start ",Filename(dir, "output/index.html")));
     # Support versions of GAP without this function
     elif __profiling_pkg_temp_wsl_check() then
-      Exec(Concatenation("explorer.exe \"$(wslpath -a -w \"",Filename(dir, "/output/index.html"), "\")\""));
+      Exec(Concatenation("explorer.exe \"$(wslpath -a -w \"",Filename(dir, "output/index.html"), "\")\""));
     else
-      Exec(Concatenation("xdg-open ",Filename(dir, "/output/index.html")));
+      Exec(Concatenation("xdg-open ",Filename(dir, "output/index.html")));
     fi;
   end);
 

@@ -1,3 +1,13 @@
+2.5.2
+=====
+
+* Support latest changes to GAP kernel (4.13)
+
+2.5.1
+=====
+
+* Support latest changes to GAP kernel (4.12)
+
 2.5.0
 =====
 

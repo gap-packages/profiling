@@ -32,7 +32,14 @@ gap> kernelVer := 0;;
 gap> if IsBound(GAPInfo.KernelInfo.KERNEL_API_VERSION) then
 > kernelVer := GAPInfo.KernelInfo.KERNEL_API_VERSION;
 > fi;;
-gap> if kernelVer >= 6000 then
+gap> if kernelVer >= 8001 then
+> profData := [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 1, 1, 0, 0 ],
+>  [ 0, 0, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 1, 0, 0 ],
+>  [ 1, 1, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 1, 0, 0 ],
+>  [ 1, 1, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 1, 0, 0 ],
+>  [ 1, 0, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 1, 0, 0 ],
+>  [ 1, 1, 0, 0 ], [ 1, 1, 0, 0 ] ];
+> elif kernelVer >= 6000 then
 > profData := [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 1, 1, 0, 0 ], [ 0, 0, 0, 0 ],
 >  [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ],
 >  [ 1, 2, 0, 0 ], [ 1, 1, 0, 0 ], [ 1, 2, 0, 0 ], [ 1, 2, 0, 0 ],

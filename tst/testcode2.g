@@ -1,6 +1,8 @@
 # This code is just some test code, for checking profiling
+# This function includes characters which are not legal in JSON,
+# to ensure they are handled correctly.
 
-g := function(a)
+g\"\\ := function(a)
 	local x;
 	x := 0;
 	if a < 1 then
@@ -12,9 +14,8 @@ g := function(a)
 	if a > 2 then
 		x := 1;
 	fi;
-	Intersection(AlternatingGroup(8), AlternatingGroup(8)*(1,2));
 	return x;
 end;
 
-g(2);
-g(-2);
+g\"\\(2);
+g\"\\(-2);

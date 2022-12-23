@@ -8,7 +8,7 @@ true
 gap> dir := DirectoryTemporary();;
 gap> file := Filename(dir, "cheese.gz");;
 gap> testdir:= DirectoriesPackageLibrary( "profiling", "tst" )[1];;
-gap> Read(Filename(testdir, "testcode1.g"));
+gap> Read(Filename(testdir, "testcode1\".g"));
 gap> ProfileLineByLine(file, rec(resolution := 10));
 true
 gap> Read(Filename(testdir, "testcode2.g"));

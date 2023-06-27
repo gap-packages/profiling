@@ -238,12 +238,12 @@ struct Stream {
     {
       stream = fopen(name, "r");
       wasPopened = false;
-    }   
+    }
   }
-  
+
   bool fail()
   { return stream == 0; }
-  
+
   ~Stream() {
       if(wasPopened)
         pclose(stream);
@@ -301,11 +301,14 @@ try{
       return Fail;
     }
 
+    long line_number = 0;
+
     while(true)
     {
       if(feof(infile.stream)) {
         break;
       }
+      line_number++;
       char str[10000];
       if(fgets(str, 10000, infile.stream) == 0)
       {
@@ -420,6 +423,7 @@ try{
       {
         // We allow a few failed parses to deal with truncated files
         failedparse++;
+        Pr("Warning: damaged profile at %g:%d",  (Int)filenamestr, (Int)line_number);
         if(failedparse > 4) {
           throw GAPException("Malformed profile");
         }
@@ -517,7 +521,7 @@ try{
     GAPRecord info;
     info.set("is_cover", isCover);
     info.set("time_type", timeType);
-    
+
     GAPRecord r;
 
     r.set("line_info", read_exec_data);

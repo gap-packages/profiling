@@ -1,3 +1,10 @@
+2.5.3
+=====
+
+* Improve error messages when profiles are corrupted
+* Remove 32bit testing
+* Fix testing for latest GAP kernel
+
 2.5.2
 =====
 

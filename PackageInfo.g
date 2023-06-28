@@ -10,8 +10,8 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "2.5.2",
-Date := "20/12/2022", # dd/mm/yyyy format
+Version := "2.5.3",
+Date := "06/128/2023", # dd/mm/yyyy format
 License := "MIT AND CDDL-1.0",
 
 Persons := [
@@ -51,8 +51,8 @@ ArchiveFormats := ".tar.gz",
 ##
 Status := "deposited",
 
-SourceRepository := rec( 
-  Type := "git", 
+SourceRepository := rec(
+  Type := "git",
   URL := "https://github.com/gap-packages/profiling"
 ),
 IssueTrackerURL := Concatenation( ~.SourceRepository.URL, "/issues" ),

@@ -10,8 +10,8 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "2.5.3",
-Date := "06/128/2023", # dd/mm/yyyy format
+Version := "2.5.4",
+Date := "29/06/2023", # dd/mm/yyyy format
 License := "MIT AND CDDL-1.0",
 
 Persons := [

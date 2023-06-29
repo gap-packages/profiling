@@ -1,3 +1,8 @@
+2.5.4
+=====
+
+* Quick release just to fix incorrect release date
+
 2.5.3
 =====
 

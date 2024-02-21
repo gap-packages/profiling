@@ -137,7 +137,7 @@ _Prof_PrettyPrintFunction := function(f)
   return Concatenation(f.name, "@", f.filename, ":", String(f.line));
 end;
 
-# This just makes it easy to give dictionaries a default value 
+# This just makes it easy to give dictionaries a default value
 _prof_LookupWithDefault := function(dict, val, default)
     local v;
     v := LookupDictionary(dict, val);
@@ -221,7 +221,7 @@ InstallGlobalFunction("OutputFlameGraphInput",function(args...)
     PrintTo(outstream, " ", String(trace[2]), "\n");
   od;
   CloseStream(outstream);
-  
+
   if IsBound(retstring) then
     return retstring;
   fi;
@@ -264,8 +264,6 @@ InstallGlobalFunction("OutputFlameGraph", function(args...)
     ; # No argument needed
   elif options.type = "reverse" then
     args := Concatenation(args, " --reverse");
-  elif options.type = "chart" then
-    args :=Concatenation(args, " --flamechart");
   else
     ErrorNoReturn("Invalid options.type in FlameGraph config: ", options.type);
   fi;
@@ -341,7 +339,7 @@ td:nth-child(3) { text-align: right; }
 td:nth-child(4) { text-align: right; }
 """;
 
-_prof_CSS_files_withoutTiming := 
+_prof_CSS_files_withoutTiming :=
 """
 td:nth-child(1) { test-align: right; }
 """;
@@ -461,7 +459,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       PrintTo(outstream, "<th>Func</th><th>Execs</th><th>Time</th><th>Time+Childs</th>\n");
       PrintTo(outstream, "</tr>");
       PrintTo(outstream, "</thead>\n");
-      
+
       PrintTo(outstream, "<tbody>\n");
       for line in funcusage do
         fn := line[1];
@@ -514,7 +512,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       fi;
       PrintTo(outstream, "</tr>");
       PrintTo(outstream, "</thead>\n");
-      
+
       PrintTo(outstream, "<tbody>\n");
       for i in [1..Length(lines)] do
 
@@ -556,7 +554,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
             PrintTo(outstream, time);
 
         fi;
-        
+
         PrintTo(outstream, "<td><span><tt>", HTMLEncodeString(lines[i]), "</tt></span></td>");
 
         if hasTiming then
@@ -603,7 +601,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
       Sort(overview, function(v,w) return v.inname < w.inname; end);
 
       any_timeexec := ForAny(overview, i -> IsBound(i.filetime) and IsBound(i.fileexec) );
-      
+
       filename := Concatenation(outdir, "/index.html");
       outstream := OutputTextFile(filename, false);
       SetPrintFormattingStatus(outstream, false);
@@ -735,7 +733,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
             if _prof_fileHasCoverage(fileinfo) then
                 fileview.readnotexeclines := Length(Filtered(fileinfo[2], x -> (x[1] >= 1 and x[2] = 0)));
             fi;
-            
+
             Add(overview, fileview);
 
             outputhtml(allLines, fileinfo, callinfo[2], calledbyinfo[2], outstream);
@@ -753,7 +751,7 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
 
 
     if ForAny(overview, x -> IsBound(x.filetime) and x.filetime > 0) then
-      for o in ["default", "reverse", "chart"] do
+      for o in ["default", "reverse"] do
         for squash in ["standard", "squash"] do
           flameoptions := rec(type := o);
           if squash = "standard" then
@@ -1097,7 +1095,7 @@ function(data, outfile)
         if IsExistingFile(file[1]) then
             IO_Write(outstream, "TN:\n");
             IO_Write(outstream, Concatenation("SF:",file[1],"\n"));
-            
+
             lines := file[2];
             for i in [1..Length(lines)] do
               if lines[i][1] > 0 or lines[i][2] > 0 then

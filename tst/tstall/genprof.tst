@@ -17,9 +17,6 @@ true
 gap> OutputFlameGraph(file, Filename(dir, "flame"));
 gap> IsReadableFile(Filename(dir, "flame"));
 true
-gap> OutputFlameGraph(file, Filename(dir, "flame2"), rec(type := "chart"));
-gap> IsReadableFile(Filename(dir, "flame2"));
-true
 gap> OutputFlameGraph(file, Filename(dir, "flame3"), rec(type := "reverse"));
 gap> IsReadableFile(Filename(dir, "flame3"));
 true

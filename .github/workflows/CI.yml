@@ -25,12 +25,13 @@ jobs:
       matrix:
         gap-branch:
           - master
+          - stable-4.13
           - stable-4.12
           - stable-4.11
           - stable-4.10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: gap-actions/setup-gap@v2
         with:
           GAP_PKGS_TO_BUILD: 'io' # exclude profiling, i.e., *this* package
@@ -39,6 +40,10 @@ jobs:
       - uses: gap-actions/run-pkg-tests@v2
         with:
           NO_COVERAGE: 'yes'
+      - uses: gap-actions/run-pkg-tests@v2
+        with:
+          NO_COVERAGE: 'yes'
+          only-needed: true
       - name: "Generate source coverage reports by running gcov"
         run: find . -type f -name '*.gcno' -exec gcov -pb {} +
       - uses: codecov/codecov-action@v3
@@ -51,7 +56,7 @@ jobs:
     env:
       CHERE_INVOKING: 1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: gap-actions/setup-cygwin@v1
       - uses: gap-actions/setup-gap@cygwin-v2
         with:
@@ -79,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: gap-actions/setup-gap@v2
         with:
           GAP_PKGS_TO_BUILD: "io" # exclude profiling, i.e., *this* package
@@ -87,7 +92,7 @@ jobs:
         with:
           use-latex: 'true'
       - name: 'Upload documentation'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: manual
           path: ./doc/manual.pdf

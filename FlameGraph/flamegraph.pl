@@ -103,7 +103,7 @@ my $imagewidth = 1200;          # max width, pixels
 my $frameheight = 16;           # max height is dynamic
 my $fontsize = 12;              # base text size
 my $fontwidth = 0.59;           # avg width relative to fontsize
-my $minwidth = 0.1;             # min function width, pixels
+my $minwidth = 0.1;             # min function width, pixels or percentage of time
 my $nametype = "Function:";     # what are the names in the data?
 my $countname = "samples";      # what are the counts in the data?
 my $colors = "hot";             # color theme
@@ -112,6 +112,7 @@ my $nameattrfile;               # file holding function attributes
 my $timemax;                    # (override the) sum of the counts
 my $factor = 1;                 # factor to scale counts by
 my $hash = 0;                   # color by function name
+my $rand = 0;                   # color randomly
 my $palette = 0;                # if we use consistent palettes (default off)
 my %palette_map;                # palette map hash
 my $pal_file = "palette.map";   # palette map file name
@@ -134,7 +135,8 @@ USAGE: $0 [options] infile > outfile.svg\n
 	--subtitle TEXT  # second level title (optional)
 	--width NUM      # width of image (default 1200)
 	--height NUM     # height of each frame (default 16)
-	--minwidth NUM   # omit smaller functions (default 0.1 pixels)
+	--minwidth NUM   # omit smaller functions. In pixels or use "%" for
+	                 # percentage of time (default 0.1 pixels)
 	--fonttype FONT  # font type (default "Verdana")
 	--fontsize NUM   # font size (default 12)
 	--countname TEXT # count type label (default "samples")
@@ -145,6 +147,7 @@ USAGE: $0 [options] infile > outfile.svg\n
 	--bgcolors COLOR # set background colors. gradient choices are yellow
 	                 # (default), blue, green, grey; flat colors use "#rrggbb"
 	--hash           # colors are keyed by function name hash
+	--random         # colors are randomly generated
 	--cp             # use consistent palette (palette.map)
 	--reverse        # generate stack-reversed flame graph
 	--inverted       # icicle graph
@@ -165,7 +168,7 @@ GetOptions(
 	'encoding=s'  => \$encoding,
 	'fontsize=f'  => \$fontsize,
 	'fontwidth=f' => \$fontwidth,
-	'minwidth=f'  => \$minwidth,
+	'minwidth=s'  => \$minwidth,
 	'title=s'     => \$titletext,
 	'subtitle=s'  => \$subtitletext,
 	'nametype=s'  => \$nametype,
@@ -176,6 +179,7 @@ GetOptions(
 	'colors=s'    => \$colors,
 	'bgcolors=s'  => \$bgcolors,
 	'hash'        => \$hash,
+	'random'      => \$rand,
 	'cp'          => \$palette,
 	'reverse'     => \$stackreverse,
 	'inverted'    => \$inverted,
@@ -222,6 +226,16 @@ if ($nameattrfile) {
 
 if ($notestext =~ /[<>]/) {
 	die "Notes string can't contain < or >"
+}
+
+# Ensure minwidth is a valid floating-point number,
+# print usage string if not
+my $minwidth_f;
+if ($minwidth =~ /^([0-9.]+)%?$/) {
+	$minwidth_f = $1;
+} else {
+	warn "Value '$minwidth' is invalid for minwidth, expected a float.\n";
+	usage();
 }
 
 # background colors:
@@ -364,6 +378,23 @@ sub namehash {
 	return (1 - $vector / $max)
 }
 
+sub sum_namehash {
+  my $name = shift;
+  return unpack("%32W*", $name);
+}
+
+sub random_namehash {
+	# Generate a random hash for the name string.
+	# This ensures that functions with the same name have the same color,
+	# both within a flamegraph and across multiple flamegraphs without
+	# needing to set a palette and while preserving the original flamegraph
+	# optic, unlike what happens with --hash.
+	my $name = shift;
+	my $hash = sum_namehash($name);
+	srand($hash);
+	return rand(1)
+}
+
 sub color {
 	my ($type, $hash, $name) = @_;
 	my ($v1, $v2, $v3);
@@ -371,10 +402,14 @@ sub color {
 	if ($hash) {
 		$v1 = namehash($name);
 		$v2 = $v3 = namehash(scalar reverse $name);
-	} else {
+	} elsif ($rand) {
 		$v1 = rand(1);
 		$v2 = rand(1);
 		$v3 = rand(1);
+	} else {
+		$v1 = random_namehash($name);
+		$v2 = random_namehash($name);
+		$v3 = random_namehash($name);
 	}
 
 	# theme palettes
@@ -409,6 +444,10 @@ sub color {
 			$type = "aqua";
 		} elsif ($name =~ m:^L?(java|javax|jdk|net|org|com|io|sun)/:) {	# Java
 			$type = "green";
+		} elsif ($name =~ /:::/) {      # Java, typical perf-map-agent method separator
+			$type = "green";
+		} elsif ($name =~ /::/) {	# C++
+			$type = "yellow";
 		} elsif ($name =~ m:_\[k\]$:) {	# kernel annotation
 			$type = "orange";
 		} elsif ($name =~ /::/) {	# C++
@@ -679,6 +718,12 @@ foreach (@SortedData) {
 }
 flow($last, [], $time, $delta);
 
+if ($countname eq "samples") {
+	# If $countname is used, it's likely that we're not measuring in stack samples
+	# (e.g. time could be the unit), so don't warn.
+	warn "Stack count is low ($time). Did something go wrong?\n" if $time < 100;
+}
+
 warn "Ignored $ignored lines with invalid format\n" if $ignored;
 unless ($time) {
 	warn "ERROR: No stack counts found\n";
@@ -699,7 +744,14 @@ if ($timemax and $timemax < $time) {
 $timemax ||= $time;
 
 my $widthpertime = ($imagewidth - 2 * $xpad) / $timemax;
-my $minwidth_time = $minwidth / $widthpertime;
+
+# Treat as a percentage of time if the string ends in a "%".
+my $minwidth_time;
+if ($minwidth =~ /%$/) {
+	$minwidth_time = $timemax * $minwidth_f / 100;
+} else {
+	$minwidth_time = $minwidth_f / $widthpertime;
+}
 
 # prune blocks that are too narrow and determine max depth
 while (my ($id, $node) = each %Node) {
@@ -756,8 +808,15 @@ my $inc = <<INC;
 		svg = document.getElementsByTagName("svg")[0];
 		searching = 0;
 		currentSearchTerm = null;
+
+		// use GET parameters to restore a flamegraphs state.
+		var params = get_params();
+		if (params.x && params.y)
+			zoom(find_group(document.querySelector('[x="' + params.x + '"][y="' + params.y + '"]')));
+                if (params.s) search(params.s);
 	}
 
+	// event listeners
 	window.addEventListener("click", function(e) {
 		var target = find_group(e.target);
 		if (target) {
@@ -765,10 +824,28 @@ my $inc = <<INC;
 				if (e.ctrlKey === false) return;
 				e.preventDefault();
 			}
-			if (target.classList.contains("parent")) unzoom();
+			if (target.classList.contains("parent")) unzoom(true);
 			zoom(target);
+			if (!document.querySelector('.parent')) {
+				// we have basically done a clearzoom so clear the url
+				var params = get_params();
+				if (params.x) delete params.x;
+				if (params.y) delete params.y;
+				history.replaceState(null, null, parse_params(params));
+				unzoombtn.classList.add("hide");
+				return;
+			}
+
+			// set parameters for zoom state
+			var el = target.querySelector("rect");
+			if (el && el.attributes && el.attributes.y && el.attributes._orig_x) {
+				var params = get_params()
+				params.x = el.attributes._orig_x.value;
+				params.y = el.attributes.y.value;
+				history.replaceState(null, null, parse_params(params));
+			}
 		}
-		else if (e.target.id == "unzoom") unzoom();
+		else if (e.target.id == "unzoom") clearzoom();
 		else if (e.target.id == "search") search_prompt();
 		else if (e.target.id == "ignorecase") toggle_ignorecase();
 	}, false)
@@ -787,26 +864,43 @@ my $inc = <<INC;
 	}, false)
 
 	// ctrl-F for search
+	// ctrl-I to toggle case-sensitive search
 	window.addEventListener("keydown",function (e) {
 		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
 			e.preventDefault();
 			search_prompt();
 		}
-	}, false)
-
-	// ctrl-I to toggle case-sensitive search
-	window.addEventListener("keydown",function (e) {
-		if (e.ctrlKey && e.keyCode === 73) {
+		else if (e.ctrlKey && e.keyCode === 73) {
 			e.preventDefault();
 			toggle_ignorecase();
 		}
 	}, false)
 
 	// functions
+	function get_params() {
+		var params = {};
+		var paramsarr = window.location.search.substr(1).split('&');
+		for (var i = 0; i < paramsarr.length; ++i) {
+			var tmp = paramsarr[i].split("=");
+			if (!tmp[0] || !tmp[1]) continue;
+			params[tmp[0]]  = decodeURIComponent(tmp[1]);
+		}
+		return params;
+	}
+	function parse_params(params) {
+		var uri = "?";
+		for (var key in params) {
+			uri += key + '=' + encodeURIComponent(params[key]) + '&';
+		}
+		if (uri.slice(-1) == "&")
+			uri = uri.substring(0, uri.length - 1);
+		if (uri == '?')
+			uri = window.location.href.split('?')[0];
+		return uri;
+	}
 	function find_child(node, selector) {
 		var children = node.querySelectorAll(selector);
 		if (children.length) return children[0];
-		return;
 	}
 	function find_group(node) {
 		var parent = node.parentElement;
@@ -849,11 +943,15 @@ my $inc = <<INC;
 		}
 
 		t.textContent = txt;
-		// Fit in full text width
-		if (/^ *\$/.test(txt) || t.getSubStringLength(0, txt.length) < w)
+		var sl = t.getSubStringLength(0, txt.length);
+		// check if only whitespace or if we can fit the entire string into width w
+		if (/^ *\$/.test(txt) || sl < w)
 			return;
 
-		for (var x = txt.length - 2; x > 0; x--) {
+		// this isn't perfect, but gives a good starting point
+		// and avoids calling getSubStringLength too often
+		var start = Math.floor((w/sl) * txt.length);
+		for (var x = start; x > 0; x = x-2) {
 			if (t.getSubStringLength(0, x + 2) <= w) {
 				t.textContent = txt.substring(0, x) + "..";
 				return;
@@ -959,16 +1057,25 @@ my $inc = <<INC;
 		}
 		search();
 	}
-	function unzoom() {
+	function unzoom(dont_update_text) {
 		unzoombtn.classList.add("hide");
 		var el = document.getElementById("frames").children;
 		for(var i = 0; i < el.length; i++) {
 			el[i].classList.remove("parent");
 			el[i].classList.remove("hide");
 			zoom_reset(el[i]);
-			update_text(el[i]);
+			if(!dont_update_text) update_text(el[i]);
 		}
 		search();
+	}
+	function clearzoom() {
+		unzoom();
+
+		// remove zoom state
+		var params = get_params();
+		if (params.x) delete params.x;
+		if (params.y) delete params.y;
+		history.replaceState(null, null, parse_params(params));
 	}
 
 	// search
@@ -987,6 +1094,9 @@ my $inc = <<INC;
 		for (var i = 0; i < el.length; i++) {
 			orig_load(el[i], "fill")
 		}
+		var params = get_params();
+		delete params.s;
+		history.replaceState(null, null, parse_params(params));
 	}
 	function search_prompt() {
 		if (!searching) {
@@ -994,10 +1104,7 @@ my $inc = <<INC;
 			    "allowed, eg: ^ext4_)"
 			    + (ignorecase ? ", ignoring case" : "")
 			    + "\\nPress Ctrl-i to toggle case sensitivity", "");
-			if (term != null) {
-				currentSearchTerm = term;
-				search();
-			}
+			if (term != null) search(term);
 		} else {
 			reset_search();
 			searching = 0;
@@ -1009,10 +1116,9 @@ my $inc = <<INC;
 		}
 	}
 	function search(term) {
-		if (currentSearchTerm === null) return;
-		var term = currentSearchTerm;
+		if (term) currentSearchTerm = term;
 
-		var re = new RegExp(term, ignorecase ? 'i' : '');
+		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
 		var el = document.getElementById("frames").children;
 		var matches = new Object();
 		var maxwidth = 0;
@@ -1048,6 +1154,9 @@ my $inc = <<INC;
 		}
 		if (!searching)
 			return;
+		var params = get_params();
+		params.s = currentSearchTerm;
+		history.replaceState(null, null, parse_params(params));
 
 		searchbtn.classList.add("show");
 		searchbtn.firstChild.nodeValue = "Reset Search";
@@ -1122,8 +1231,10 @@ while (my ($id, $node) = each %Node) {
 		$y2 = $ypad1 + ($depth + 1) * $frameheight - $framepad;
 	}
 
+	# Add commas per perlfaq5:
+	# https://perldoc.perl.org/perlfaq5#How-can-I-output-my-numbers-with-commas-added?
 	my $samples = sprintf "%.0f", ($etime - $stime) * $factor;
-	(my $samples_txt = $samples) # add commas per perlfaq5
+	(my $samples_txt = $samples)
 		=~ s/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/$1,/g;
 
 	my $info;
@@ -1168,7 +1279,7 @@ while (my ($id, $node) = each %Node) {
 
 	my $chars = int( ($x2 - $x1) / ($fontsize * $fontwidth));
 	my $text = "";
-	if ($chars >= 3) { # room for one char plus two dots
+	if ($chars >= 3) { # room for one char plus two dots
 		$func =~ s/_\[[kwij]\]$//;	# strip any annotation
 		$text = substr $func, 0, $chars;
 		substr($text, -2, 2) = ".." if $chars < length $func;

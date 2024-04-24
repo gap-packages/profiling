@@ -617,18 +617,15 @@ InstallGlobalFunction("OutputAnnotatedCodeCoverageFiles",function(arg)
                             <th><b>Flame Graphs</b>
                             <th>Standard</th>
                             <th>Stacks Reversed</th>
-                            <th>X-Axis Sorted by Time</th>
                           </tr>
                           <tr>
                             <th>Standard</th>
                             <td><a href="flame-default-standard.svg">Graph</a></th>
                             <td><a href="flame-reverse-standard.svg">Graph</a></tdt>
-                            <td><a href="flame-chart-standard.svg">Graph</a></td>
                           <tr>
                             <th>Squashed Recursive Function</th>
                             <td><a href="flame-default-squash.svg">Graph</a></th>
                             <td><a href="flame-reverse-squash.svg">Graph</a></td>
-                            <td><a href="flame-chart-squash.svg">Graph</a></td>
                           </tr>
                         </table></p>""");
         PrintTo(outstream, """<p><a href="funcoverview.html">Function Overview</a></p>""");

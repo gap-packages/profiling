@@ -46,7 +46,9 @@ jobs:
           only-needed: true
       - name: "Generate source coverage reports by running gcov"
         run: find . -type f -name '*.gcno' -exec gcov -pb {} +
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   # The Cygwin job
   test-cygwin:
@@ -72,7 +74,9 @@ jobs:
       - name: "Generate source coverage reports by running gcov"
         run: find . -type f -name '*.gcno' -exec gcov -pb {} +
         shell: bash
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: "Setup tmate session"
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}

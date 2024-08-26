@@ -69,20 +69,21 @@ PackageDoc := rec(
 ),
 
 Dependencies := rec(
-  GAP := ">= 4.10",
+  GAP := ">= 4.12",
   NeededOtherPackages := [ [ "GAPDoc", ">= 1.5" ], ["IO", ">= 4.4.4" ] ],
   SuggestedOtherPackages := [ ],
   ExternalConditions := [ ],
 ),
 
 AvailabilityTest := function()
-        local so_exists;
-        so_exists := (Filename(DirectoriesPackagePrograms("profiling"), "profiling.so") <> fail);
-        if not(so_exists) then
-          Info(InfoWarning, 1, "Kernel extension not built for profiling package");
-        fi;
-        return so_exists;
-    end,
+  if not IsKernelExtensionAvailable("profiling") then
+    LogPackageLoadingMessage(PACKAGE_WARNING,
+                             ["the kernel module is not compiled, ",
+                              "the package cannot be loaded."]);
+    return fail;
+  fi;
+  return true;
+end,
 
 TestFile := "tst/testall.g",
 

@@ -10,10 +10,9 @@ if not IsBound(UserHomeExpand) then
 fi;
 
 # load kernel function if it is installed:
-_PATH_SO:=Filename(DirectoriesPackagePrograms("profiling"), "profiling.so");
-if _PATH_SO <> fail then
-    LoadDynamicModule(_PATH_SO);
-fi;
-Unbind(_PATH_SO);
+  if LoadKernelExtension("profiling") = false then
+      Error("failed to load profiling kernel extension");
+  fi;
+
 
 ReadPackage( "profiling", "gap/profiling.gd");

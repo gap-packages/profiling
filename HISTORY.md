@@ -1,3 +1,9 @@
+2.6.0
+=====
+
+* Improve output formatting
+* Overhaul CI
+
 2.5.4
 =====
 

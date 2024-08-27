@@ -46,10 +46,8 @@
   options  are  'squash'  (which  is  a  boolean).  If  'squash'  is true then
   recursive  functions  calls  will  be  squashed,  so the graph will not show
   recursive  functions calling themselves. The other allowed option is 'type',
-  which  can  be  "default"  (a  standard  flamegraph), "reverse" (reverse the
-  graph, showing the leaf functions first), and "chart" (where the graph shows
-  the  flow of time from left-to-right, rather than merging all calls from one
-  function to another into one block).[133X
+  which  can  be  "default"  (a standard flamegraph) or "reverse" (reverse the
+  graph, showing the leaf functions first)[133X
   
   [1X2.2-2 OutputFlameGraphInput[101X
   

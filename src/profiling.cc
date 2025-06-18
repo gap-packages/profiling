@@ -254,7 +254,7 @@ struct Stream {
 
 
 
-Obj READ_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
+Obj FuncREAD_PROFILE_FROM_STREAM(Obj self, Obj filename, Obj param2)
 {
 try{
     bool isCover = false;
@@ -537,7 +537,7 @@ try{
 return Fail;
 }
 
-Obj HTMLEncodeString(Obj self, Obj param)
+Obj FuncHTMLEncodeString(Obj self, Obj param)
 {
   if(!IS_STRING_REP(param))
   {
@@ -594,7 +594,7 @@ Obj HTMLEncodeString(Obj self, Obj param)
   return outstring;
 }
 
-Obj MD5File(Obj self, Obj filename)
+Obj FuncMD5File(Obj self, Obj filename)
 {
   if (!IsStringConv(filename))
   {
@@ -650,25 +650,17 @@ Obj MD5File(Obj self, Obj filename)
   return MakeImmString(str);
 }
 
-typedef Obj (* GVarFuncTypeDef)(/*arguments*/);
-
-#define GVAR_FUNC_TABLE_ENTRY(srcfile, name, nparam, params) \
-  {#name, nparam, \
-   params, \
-   (GVarFuncTypeDef)name, \
-   srcfile ":Func" #name }
-
 // Table of functions to export
 static StructGVarFunc GVarFuncs [] = {
-    GVAR_FUNC_TABLE_ENTRY("profiling.c",READ_PROFILE_FROM_STREAM, 2, "param, param2"),
-    GVAR_FUNC_TABLE_ENTRY("profiling.c",HTMLEncodeString, 1, "param"),
-    GVAR_FUNC_TABLE_ENTRY("profiling.c",MD5File, 1, "filename"),
+    GVAR_FUNC_2ARGS(READ_PROFILE_FROM_STREAM, param, param2),
+    GVAR_FUNC_1ARGS(HTMLEncodeString, param),
+    GVAR_FUNC_1ARGS(MD5File, filename),
 
 	{ 0 } /* Finish with an empty entry */
-
 };
 
-/******************************************************************************
+/****************************************************************************
+**
 *F  InitKernel( <module> )  . . . . . . . . initialise kernel data structures
 */
 static Int InitKernel( StructInitInfo *module )
@@ -680,7 +672,8 @@ static Int InitKernel( StructInitInfo *module )
     return 0;
 }
 
-/******************************************************************************
+/****************************************************************************
+**
 *F  InitLibrary( <module> ) . . . . . . .  initialise library data structures
 */
 static Int InitLibrary( StructInitInfo *module )
@@ -692,7 +685,8 @@ static Int InitLibrary( StructInitInfo *module )
     return 0;
 }
 
-/******************************************************************************
+/****************************************************************************
+**
 *F  InitInfopl()  . . . . . . . . . . . . . . . . . table of init functions
 */
 static StructInitInfo module = {

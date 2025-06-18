@@ -650,12 +650,10 @@ Obj MD5File(Obj self, Obj filename)
   return MakeImmString(str);
 }
 
-typedef Obj (* GVarFuncTypeDef)(/*arguments*/);
-
 #define GVAR_FUNC_TABLE_ENTRY(srcfile, name, nparam, params) \
   {#name, nparam, \
    params, \
-   (GVarFuncTypeDef)name, \
+   (ObjFunc)name, \
    srcfile ":Func" #name }
 
 // Table of functions to export

@@ -1,3 +1,8 @@
+2.6.1
+=====
+
+* Internal changes to support new versions of gcc
+
 2.6.0
 =====
 

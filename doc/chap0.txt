@@ -6,10 +6,10 @@
                [1X Line by line profiling and code coverage for [5XGAP[105X [101X
   
   
-                                     2.6.0
+                                     2.6.1
   
   
-                                 27 August 2024
+                                  19 June 2025
   
   
                              Christopher Jefferson

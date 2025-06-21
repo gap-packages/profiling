@@ -1,3 +1,8 @@
+2.6.2
+=====
+
+* Internal changes to prepare for future GAP versions
+
 2.6.1
 =====
 

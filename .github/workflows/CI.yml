@@ -69,12 +69,13 @@ jobs:
       - uses: gap-actions/run-pkg-tests@cygwin-v2
         with:
           NO_COVERAGE: 'yes'
-      - name: "Generate source coverage reports by running gcov"
-        run: find . -type f -name '*.gcno' -exec gcov -pb {} +
-        shell: bash
-      - uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+      # Coverage seems to be broken in Cygwin
+      #- name: "Generate source coverage reports by running gcov"
+      #  run: find . -type f -name '*.gcno' -exec gcov -pb {} +
+      #  shell: bash
+      #- uses: codecov/codecov-action@v5
+      #  with:
+      #    token: ${{ secrets.CODECOV_TOKEN }}
       - name: "Setup tmate session"
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}

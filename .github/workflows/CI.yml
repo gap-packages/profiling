@@ -52,7 +52,6 @@ jobs:
   # The Cygwin job
   test-cygwin:
     name: 'cygwin64 - GAP master'
-    if: ${{ !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: windows-2022
     env:
       CHERE_INVOKING: 1

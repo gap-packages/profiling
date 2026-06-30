@@ -20,32 +20,28 @@ concurrency:
 jobs:
   # The CI test job
   test:
-    name: "GAP ${{ matrix.gap-branch }} on ${{ matrix.os }}"
+    name: "GAP ${{ matrix.gap-version }} on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
         os:
           - ubuntu
-        gap-branch:
-          - master
-          - stable-4.16
-          - stable-4.15
-          - stable-4.14
-          - stable-4.13
-          - stable-4.12
+        gap-version:
+          - 'devel'
+          - 'latest'
+          - '4.12'
         include:
           - os: windows
-            gap-branch: master
+            gap-version: 'devel'
 
     steps:
       - uses: actions/checkout@v6
       - uses: gap-actions/setup-cygwin@v2
         if: ${{ runner.os == 'Windows' }}
-      - uses: gap-actions/setup-gap@v2
+      - uses: gap-actions/setup-gap@v3
         with:
-          GAP_PKGS_TO_BUILD: 'io' # exclude profiling, i.e., *this* package
-          GAPBRANCH: ${{ matrix.gap-branch }}
+          gap-version: ${{ matrix.gap-version }}
       - uses: gap-actions/build-pkg@v3
       - uses: gap-actions/run-pkg-tests@v4
         with:

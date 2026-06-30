@@ -97,6 +97,10 @@ struct MessageHandler {
 		return true;
   }
 
+  bool RawNumber(const char *str, SizeType length, bool copy) {
+    return String(str, length, copy);
+  }
+
   bool Int(int i) { return Int64(i); }
   bool Uint(unsigned u) { return Int64(u); }
   bool Uint64(uint64_t u) { return Int64(u); }

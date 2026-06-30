@@ -18,10 +18,9 @@ f := function() Intersection(a,b); end;
 ]]></Listing>
 
 Firstly, we will record a profile of the function <C>f</C>:
+With this, the code between <C>ProfileLineByLine</C> and <C>UnprofileLineByLine</C> is recorded to a file <F>output.gz</F>.
 
 <Listing><![CDATA[
-# Code between ProfileLineByLine and UnprofileLineByLine is recorded
-# to a file output.gz
 ProfileLineByLine("output.gz"); f(); UnprofileLineByLine();
 ]]></Listing>
 

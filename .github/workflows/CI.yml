@@ -50,7 +50,7 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         with:
           coverage: false
-          mode: 'onlyneeded'
+          mode: onlyneeded
       - name: "Generate source coverage reports by running gcov"
         shell: bash
         run: find . -type f -name '*.gcno' -exec gcov -pb {} +

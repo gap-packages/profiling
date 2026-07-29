@@ -1,3 +1,9 @@
+2.6.3
+=====
+
+* Remove unneeded dependancy on GAPDoc
+* Many changes to CI (does not effect usage)
+
 2.6.2
 =====
 

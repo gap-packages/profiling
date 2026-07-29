@@ -10,8 +10,8 @@ SetPackageInfo( rec(
 
 PackageName := "profiling",
 Subtitle := "Line by line profiling and code coverage for GAP",
-Version := "2.6.2",
-Date := "21/06/2025", # dd/mm/yyyy format
+Version := "2.6.3",
+Date := "29/07/2026", # dd/mm/yyyy format
 License := "MIT AND CDDL-1.0",
 
 Persons := [
@@ -20,7 +20,7 @@ Persons := [
     IsMaintainer := true,
     FirstNames := "Christopher",
     LastName := "Jefferson",
-    WWWHome := "https://caj.host.cs.st-andrews.ac.uk/",
+    WWWHome := "https://heather.cafe/",
     Email := "caj21@st-andrews.ac.uk",
     PostalAddress := Concatenation(
                "St Andrews\n",

@@ -28,9 +28,9 @@ jobs:
         os:
           - ubuntu
         gap-version:
-          - 'devel'
-          - 'latest'
-          - '4.12'
+          - 'devel'   # current GAP development version from git
+          - 'latest'  # latest GAP release
+          - 'minimal' # oldest GAP release supported by this package
         include:
           - os: windows
             gap-version: 'devel'

@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/gap-packages/profiling/workflows/CI/badge.svg?branch=master)](https://github.com/gap-packages/profiling/actions?query=workflow%3ACI+branch%3Amaster)
+[![CI](https://github.com/gap-packages/profiling/actions/workflows/CI.yml/badge.svg)](https://github.com/gap-packages/profiling/actions/workflows/CI.yml)
 [![Code Coverage](https://codecov.io/github/gap-packages/profiling/coverage.svg?branch=master&token=)](https://codecov.io/gh/gap-packages/profiling)
 
 # The GAP 4 package `profiling'

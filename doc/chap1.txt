@@ -23,11 +23,11 @@
     [4Xf := function() Intersection(a,b); end;[104X
   [4X[32X[104X
   
-  [33X[0;0YFirstly, we will record a profile of the function [10Xf[110X:[133X
+  [33X[0;0YFirstly,  we  will  record  a profile of the function [10Xf[110X: With this, the code
+  between  [10XProfileLineByLine[110X  and  [10XUnprofileLineByLine[110X  is  recorded to a file
+  [11Xoutput.gz[111X.[133X
   
   [4X[32X[104X
-    [4X# Code between ProfileLineByLine and UnprofileLineByLine is recorded[104X
-    [4X# to a file output.gz[104X
     [4XProfileLineByLine("output.gz"); f(); UnprofileLineByLine();[104X
   [4X[32X[104X
   

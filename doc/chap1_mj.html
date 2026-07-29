@@ -58,12 +58,10 @@ b := a^(1,2,3);
 f := function() Intersection(a,b); end;
 </pre></div>
 
-<p>Firstly, we will record a profile of the function <code class="code">f</code>:</p>
+<p>Firstly, we will record a profile of the function <code class="code">f</code>: With this, the code between <code class="code">ProfileLineByLine</code> and <code class="code">UnprofileLineByLine</code> is recorded to a file <code class="file">output.gz</code>.</p>
 
 
 <div class="example"><pre>
-# Code between ProfileLineByLine and UnprofileLineByLine is recorded
-# to a file output.gz
 ProfileLineByLine("output.gz"); f(); UnprofileLineByLine();
 </pre></div>
 
